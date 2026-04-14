@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      const data = chartDataMap.get(dateKey);
+      const data = chartDataMap.get(dateKey)!;
       data.invoices += invoice.amount;
 
       const paidAmount = invoice.payments.reduce(
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      const data = chartDataMap.get(dateKey);
+      const data = chartDataMap.get(dateKey)!;
       data.expenses += expense.amount;
     });
 
@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      const data = chartDataMap.get(dateKey);
+      const data = chartDataMap.get(dateKey)!;
       data.budget += budget.limit;
     });
 
