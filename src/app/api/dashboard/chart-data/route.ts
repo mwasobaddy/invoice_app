@@ -10,6 +10,9 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth();
+    if (!user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const userId = user.id;
     const period = request.nextUrl.searchParams.get('period') || 'monthly';
 
