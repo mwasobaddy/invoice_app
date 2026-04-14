@@ -150,7 +150,7 @@ async function main() {
             amount,
           }
         })
-        const totalAmount = items.reduce((sum, item) => sum + item.amount, 0)
+        const totalAmount = items.reduce((sum: number, item) => sum + item.amount, 0)
         const invoiceNo = formatInvoiceNo(issueDate, i)
 
         const invoice = await prisma.invoice.create({

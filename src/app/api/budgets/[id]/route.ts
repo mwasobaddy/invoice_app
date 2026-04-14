@@ -68,7 +68,7 @@ export async function PUT(
       );
     }
 
-    const spent = existing.expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const spent = existing.expenses.reduce((sum: number, exp: { amount: number; }) => sum + exp.amount, 0);
     const nextLimit = body.limit ?? existing.limit;
     const remaining = nextLimit - spent;
 

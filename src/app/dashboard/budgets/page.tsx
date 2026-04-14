@@ -302,7 +302,7 @@ export default function BudgetsPage() {
               <tbody className="divide-y divide-slate-100">
                 {items.map((budget) => {
                   const isEditing = editingId === budget.id
-                  const spent = budget.expenses.reduce((sum, exp) => sum + exp.amount, 0)
+                  const spent = budget.expenses.reduce((sum: number, exp) => sum + exp.amount, 0)
                   const remaining = budget.limit - spent
 
                   return (
