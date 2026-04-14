@@ -195,7 +195,7 @@ async function main() {
       })
 
       for (const budget of createdBudgets) {
-        const spent = budget.expenses.reduce((sum, exp) => sum + exp.amount, 0)
+        const spent = budget.expenses.reduce((sum: number, exp: { amount: number }) => sum + exp.amount, 0)
         const remaining = Math.max(0, budget.limit - spent)
         await prisma.budget.update({
           where: { id: budget.id },
