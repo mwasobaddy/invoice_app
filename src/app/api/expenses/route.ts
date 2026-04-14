@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
       if (budget) {
         const totalSpent = budget.expenses.reduce(
-          (sum, exp) => sum + exp.amount,
+          (sum: number, exp) => sum + exp.amount,
           0
         );
         const remaining = budget.limit - totalSpent;
