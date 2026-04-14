@@ -29,7 +29,7 @@ export async function GET() {
     };
 
     budgets.forEach((budget: typeof budgets[0]) => {
-      const spent = budget.expenses.reduce((sum: number, expense) => sum + expense.amount, 0);
+      const spent = budget.expenses.reduce((sum: number, expense: { amount: number; }) => sum + expense.amount, 0);
 
       stats.totalBudget += budget.limit;
       stats.totalSpent += spent;
