@@ -29,8 +29,18 @@ export async function GET(request: NextRequest) {
       where: { userId },
     });
 
+    // Define chart data structure
+    interface ChartData {
+      period: string;
+      invoices: number;
+      paidInvoices: number;
+      pendingInvoices: number;
+      expenses: number;
+      budget: number;
+    }
+
     // Organize data by date
-    const chartDataMap = new Map<string, any>();
+    const chartDataMap = new Map<string, ChartData>();
 
     // Helper to get date key based on period
     const getDateKey = (date: Date) => {
