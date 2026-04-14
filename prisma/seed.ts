@@ -65,155 +65,156 @@ function formatInvoiceNo(date: Date, index: number) {
 
 async function main() {
   const { prisma } = await import('../src/lib/prisma')
-  const rand = mulberry32(20260415)
+  try {
+    const rand = mulberry32(20260415)
 
-  const user = await prisma.user.upsert({
-    where: { email: TARGET_EMAIL },
-    create: {
-      email: TARGET_EMAIL,
-      name: 'Kelvin Ramsiel',
-    },
-    update: {},
-  })
+    const user = await prisma.user.upsert({
+      where: { email: TARGET_EMAIL },
+      create: {
+        email: TARGET_EMAIL,
+        name: 'Kelvin Ramsiel',
+      },
+      update: {},
+    })
 
-  const seedStart = new Date(2025, 9, 1)
-  const seedEnd = new Date(2026, 3, 30)
+    const seedStart = new Date(2025, 9, 1)
+    const seedEnd = new Date(2026, 3, 30)
 
-  const months: Date[] = []
-  let cursor = monthStart(seedStart)
-  while (cursor <= seedEnd) {
-    months.push(new Date(cursor))
-    cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1)
-  }
-
-  for (const month of months) {
-    const start = monthStart(month)
-    const end = monthEnd(month)
-
-    const budgetsToCreate = 2 + Math.floor(rand() * 2)
-    const budgets = [] as Array<{ id: string; limit: number }>
-
-    for (let i = 0; i < budgetsToCreate; i += 1) {
-      const category = pick(categoryPool, rand)
-      const limit = randomBetween(4000, 12000, rand)
-      const budget = await prisma.budget.create({
-        data: {
-          userId: user.id,
-          name: `${category} - ${start.toLocaleString('en-US', { month: 'short' })}`,
-          limit,
-          spent: 0,
-          remaining: limit,
-          period: 'monthly',
-          startDate: start,
-          endDate: end,
-          category,
-          isActive: true,
-        },
-      })
-      budgets.push({ id: budget.id, limit })
+    const months: Date[] = []
+    let cursor = monthStart(seedStart)
+    while (cursor <= seedEnd) {
+      months.push(new Date(cursor))
+      cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1)
     }
 
-    const expenseCount = 8 + Math.floor(rand() * 7)
-    for (let i = 0; i < expenseCount; i += 1) {
-      const budget = pick(budgets, rand)
-      const amount = randomBetween(120, 1400, rand)
-      const date = addDays(start, Math.floor(rand() * (end.getDate() - start.getDate() + 1)))
-      await prisma.expense.create({
-        data: {
-          userId: user.id,
-          budgetId: budget.id,
-          description: `Expense ${i + 1} (${pick(expenseCategoryPool, rand)})`,
-          amount,
-          category: pick(expenseCategoryPool, rand),
-          date,
-        },
-      })
-    }
+    for (const month of months) {
+      const start = monthStart(month)
+      const end = monthEnd(month)
 
-    const invoicesCount = 4 + Math.floor(rand() * 5)
-    for (let i = 0; i < invoicesCount; i += 1) {
-      const client = pick(clientPool, rand)
-      const issueDate = addDays(start, Math.floor(rand() * 20))
-      const dueDate = addDays(issueDate, 14 + Math.floor(rand() * 10))
-      const statusPool = ['draft', 'sent', 'paid', 'overdue']
-      const status = pick(statusPool, rand)
-      const itemCount = 1 + Math.floor(rand() * 3)
-      const items = Array.from({ length: itemCount }).map((_, idx) => {
-        const quantity = randomBetween(1, 6, rand)
-        const rate = randomBetween(150, 900, rand)
-        const amount = Math.round(quantity * rate * 100) / 100
-        return {
-          description: `Service ${idx + 1}`,
-          quantity,
-          rate,
-          amount,
-        }
-      })
-      const totalAmount = items.reduce((sum, item) => sum + item.amount, 0)
-      const invoiceNo = formatInvoiceNo(issueDate, i)
+      const budgetsToCreate = 2 + Math.floor(rand() * 2)
+      const budgets = [] as Array<{ id: string; limit: number }>
 
-      const invoice = await prisma.invoice.create({
-        data: {
-          userId: user.id,
-          invoiceNo,
-          clientName: client.name,
-          clientEmail: client.email,
-          clientPhone: client.phone,
-          amount: totalAmount,
-          currency: 'USD',
-          status,
-          issueDate,
-          dueDate,
-          paidDate: status === 'paid' ? addDays(issueDate, 10) : null,
-          description: 'Monthly services',
-          items: {
-            create: items,
-          },
-        },
-      })
-
-      if (status === 'paid') {
-        await prisma.payment.create({
+      for (let i = 0; i < budgetsToCreate; i += 1) {
+        const category = pick(categoryPool, rand)
+        const limit = randomBetween(4000, 12000, rand)
+        const budget = await prisma.budget.create({
           data: {
-            invoiceId: invoice.id,
+            userId: user.id,
+            name: `${category} - ${start.toLocaleString('en-US', { month: 'short' })}`,
+            limit,
+            spent: 0,
+            remaining: limit,
+            period: 'monthly',
+            startDate: start,
+            endDate: end,
+            category,
+            isActive: true,
+          },
+        })
+        budgets.push({ id: budget.id, limit })
+      }
+
+      const expenseCount = 8 + Math.floor(rand() * 7)
+      for (let i = 0; i < expenseCount; i += 1) {
+        const budget = pick(budgets, rand)
+        const amount = randomBetween(120, 1400, rand)
+        const date = addDays(start, Math.floor(rand() * (end.getDate() - start.getDate() + 1)))
+        await prisma.expense.create({
+          data: {
+            userId: user.id,
+            budgetId: budget.id,
+            description: `Expense ${i + 1} (${pick(expenseCategoryPool, rand)})`,
+            amount,
+            category: pick(expenseCategoryPool, rand),
+            date,
+          },
+        })
+      }
+
+      const invoicesCount = 4 + Math.floor(rand() * 5)
+      for (let i = 0; i < invoicesCount; i += 1) {
+        const client = pick(clientPool, rand)
+        const issueDate = addDays(start, Math.floor(rand() * 20))
+        const dueDate = addDays(issueDate, 14 + Math.floor(rand() * 10))
+        const statusPool = ['draft', 'sent', 'paid', 'overdue']
+        const status = pick(statusPool, rand)
+        const itemCount = 1 + Math.floor(rand() * 3)
+        const items = Array.from({ length: itemCount }).map((_, idx) => {
+          const quantity = randomBetween(1, 6, rand)
+          const rate = randomBetween(150, 900, rand)
+          const amount = Math.round(quantity * rate * 100) / 100
+          return {
+            description: `Service ${idx + 1}`,
+            quantity,
+            rate,
+            amount,
+          }
+        })
+        const totalAmount = items.reduce((sum, item) => sum + item.amount, 0)
+        const invoiceNo = formatInvoiceNo(issueDate, i)
+
+        const invoice = await prisma.invoice.create({
+          data: {
+            userId: user.id,
+            invoiceNo,
+            clientName: client.name,
+            clientEmail: client.email,
+            clientPhone: client.phone,
             amount: totalAmount,
-            method: pick(paymentMethods, rand),
-            paidDate: addDays(issueDate, 10),
-            reference: `PAY-${invoiceNo}`,
+            currency: 'USD',
+            status,
+            issueDate,
+            dueDate,
+            paidDate: status === 'paid' ? addDays(issueDate, 10) : null,
+            description: 'Monthly services',
+            items: {
+              create: items,
+            },
+          },
+        })
+
+        if (status === 'paid') {
+          await prisma.payment.create({
+            data: {
+              invoiceId: invoice.id,
+              amount: totalAmount,
+              method: pick(paymentMethods, rand),
+              paidDate: addDays(issueDate, 10),
+              reference: `PAY-${invoiceNo}`,
+            },
+          })
+        }
+      }
+
+      const createdBudgets = await prisma.budget.findMany({
+        where: {
+          userId: user.id,
+          startDate: start,
+        },
+        include: { expenses: true },
+      })
+
+      for (const budget of createdBudgets) {
+        const spent = budget.expenses.reduce((sum, exp) => sum + exp.amount, 0)
+        const remaining = Math.max(0, budget.limit - spent)
+        await prisma.budget.update({
+          where: { id: budget.id },
+          data: {
+            spent,
+            remaining,
           },
         })
       }
     }
 
-    const createdBudgets = await prisma.budget.findMany({
-      where: {
-        userId: user.id,
-        startDate: start,
-      },
-      include: { expenses: true },
-    })
-
-    for (const budget of createdBudgets) {
-      const spent = budget.expenses.reduce((sum, exp) => sum + exp.amount, 0)
-      const remaining = Math.max(0, budget.limit - spent)
-      await prisma.budget.update({
-        where: { id: budget.id },
-        data: {
-          spent,
-          remaining,
-        },
-      })
-    }
+    console.log('Seed data created for', TARGET_EMAIL)
+  } finally {
+    await prisma.$disconnect()
   }
-
-  console.log('Seed data created for', TARGET_EMAIL)
 }
 
 main()
   .catch((error) => {
     console.error('Seed failed', error)
     process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
   })
