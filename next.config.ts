@@ -21,9 +21,6 @@ const nextConfig: NextConfig = {
   // React strict mode for development
   reactStrictMode: true,
 
-  // Automatic static optimization
-  swcMinify: true,
-
   // Environment variables
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
