@@ -9,6 +9,9 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth();
+    if (!user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const userId = user.id;
     const pageParam = request.nextUrl.searchParams.get('page');
     const limitParam = request.nextUrl.searchParams.get('limit');
@@ -67,6 +70,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth();
+    if (!user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const userId = user.id;
     const body = await request.json();
 
@@ -85,6 +91,7 @@ export async function POST(request: NextRequest) {
         description: body.description,
         notes: body.notes,
         items: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           create: body.items?.map((item: any) => ({
             description: item.description,
             quantity: item.quantity,
