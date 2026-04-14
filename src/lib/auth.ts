@@ -11,7 +11,8 @@ class OAuthNoPasswordError extends CredentialsSignin {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  // The generated Prisma client type differs slightly from @prisma/client's type expected by PrismaAdapter.
+  adapter: PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]),
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
@@ -75,7 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     // Handle account linking and merging
-    async signIn({ account, profile, user }) {
+    async signIn({ account, profile }) {
       // If signing in with OAuth provider (Google, Github)
       if (account?.provider === "google" || account?.provider === "github") {
         const email = profile?.email;
