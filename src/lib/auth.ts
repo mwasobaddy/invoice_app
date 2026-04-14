@@ -14,7 +14,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   pages: {
     signIn: "/auth/signin",
-    signUp: "/auth/signup",
     error: "/auth/error",
   },
   providers: [
@@ -26,12 +25,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        const email = typeof credentials?.email === "string" ? credentials.email : ""
+        const password = typeof credentials?.password === "string" ? credentials.password : ""
+
+        if (!email || !password) {
           return null
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email },
           include: { accounts: true },
         })
 
@@ -44,7 +46,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new OAuthNoPasswordError()
         }
 
-        const passwordsMatch = await compare(credentials.password, user.password)
+        const passwordsMatch = await compare(password, user.password)
 
         if (!passwordsMatch) {
           return null
@@ -91,7 +93,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // If user exists and this provider isn't already linked
         if (
           existingUser &&
-          !existingUser.accounts.find((acc) => acc.provider === account.provider)
+          !existingUser.accounts.find((acc: { provider: string }) => acc.provider === account.provider)
         ) {
           // Account exists with different provider - linking is allowed
           // PrismaAdapter will handle linking automatically
@@ -126,8 +128,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user }) {
       console.log(`User ${user.email} signed in`)
     },
-    async signOut({ token }) {
-      console.log(`User ${token.email} signed out`)
+    async signOut(params) {
+      const email = "token" in params ? params.token?.email : undefined
+      if (email) {
+        console.log(`User ${email} signed out`)
+      }
     },
   },
 
