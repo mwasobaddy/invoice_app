@@ -145,7 +145,7 @@ export async function DELETE(
 
       if (budget) {
         const totalSpent = budget.expenses.reduce(
-          (sum: number, exp) => sum + exp.amount,
+          (sum: number, exp: { amount: number; }) => sum + exp.amount,
           0
         );
         const remaining = budget.limit - totalSpent;
