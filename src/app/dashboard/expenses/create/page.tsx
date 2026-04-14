@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Expense } from '../../../../generated/prisma/models/Expense';
 
 export default function CreateExpensePage() {
   const router = useRouter()

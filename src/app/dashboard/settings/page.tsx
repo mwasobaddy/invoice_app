@@ -25,10 +25,12 @@ export default async function SettingsPage() {
     redirect("/auth/signin");
   }
 
-  const linkedProviders = user.accounts.map((acc) => ({
-    provider: acc.provider.charAt(0).toUpperCase() + acc.provider.slice(1),
-    linkedAt: acc.createdAt ?? null,
-  }));
+  const linkedProviders: Array<{ provider: string; linkedAt: Date | null }> = user.accounts.map(
+    (acc: { provider: string; }) => ({
+      provider: acc.provider.charAt(0).toUpperCase() + acc.provider.slice(1),
+      linkedAt: null,
+    })
+  );
 
   return (
     <div className="space-y-8">
