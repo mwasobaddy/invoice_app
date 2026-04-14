@@ -1,0 +1,187 @@
+// Prisma schema for Invoice Management and Budget Tracker
+// Database: PostgreSQL (Supabase or Neon)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  password      String?   // for credentials provider
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  invoices  Invoice[]
+  budgets   Budget[]
+  expenses  Expense[]
+  
+  // Auth.js relations
+  accounts      Account[]
+  sessions      Session[]
+}
+
+// Auth.js Models - Required for authentication
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Invoice model
+model Invoice {
+  id          String   @id @default(cuid())
+  invoiceNo   String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  clientName  String
+  clientEmail String?
+  clientPhone String?
+  
+  amount      Float
+  currency    String   @default("USD")
+  status      String   @default("draft") // draft, sent, paid, overdue, cancelled
+  
+  issueDate   DateTime
+  dueDate     DateTime
+  paidDate    DateTime?
+  
+  description String?
+  notes       String?
+  
+  items       InvoiceItem[]
+  payments    Payment[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+// Invoice item (line items)
+model InvoiceItem {
+  id        String   @id @default(cuid())
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  description String
+  quantity    Float   @default(1)
+  rate        Float
+  amount      Float
+  
+  @@index([invoiceId])
+}
+
+// Payment model
+model Payment {
+  id        String   @id @default(cuid())
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  amount    Float
+  method    String   // credit_card, bank_transfer, cheque, cash
+  paidDate  DateTime
+  reference String?
+  notes     String?
+  
+  createdAt DateTime @default(now())
+
+  @@index([invoiceId])
+}
+
+// Budget model for budget tracking
+model Budget {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name      String
+  limit     Float
+  spent     Float   @default(0)
+  remaining Float
+  period    String   // monthly, quarterly, yearly, custom
+  
+  startDate DateTime
+  endDate   DateTime
+  
+  category  String? // optional category (e.g., marketing, operations)
+  color     String? // hex color for UI
+  
+  isActive  Boolean @default(true)
+  
+  expenses  Expense[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([period])
+}
+
+// Expense model for budget tracking
+model Expense {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  budgetId  String?
+  budget    Budget?  @relation(fields: [budgetId], references: [id], onDelete: SetNull)
+  
+  description String
+  amount    Float
+  category  String
+  date      DateTime
+  
+  notes     String?
+  receipt   String? // file path or URL
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([budgetId])
+  @@index([date])
+}
