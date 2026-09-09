@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { useEffect, useMemo, useState } from 'react'
+import OrgSwitcher from '@/components/OrgSwitcher'
 
 const navItems = [
   { label: 'Overview', href: '/dashboard' },
@@ -59,6 +60,9 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           <div className="px-6 pt-8 pb-6">
             <div className="text-sm uppercase tracking-[0.3em] text-slate-500">Workspace</div>
             <div className="mt-2 text-2xl font-semibold text-slate-900">Invoice Atlas</div>
+            <div className="mt-4">
+              <OrgSwitcher orgs={[]} />
+            </div>
           </div>
 
           <nav className="flex-1 px-4" aria-label="Dashboard">
