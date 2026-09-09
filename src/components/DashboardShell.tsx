@@ -45,7 +45,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   }, [session])
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(1200px_circle_at_15%_-20%,#dbeafe_0%,transparent_55%),radial-gradient(900px_circle_at_90%_0%,#fde68a_0%,transparent_55%),linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)]">
+    <div className="min-h-screen bg-slate-50">
       <div className="flex h-screen overflow-y-hidden">
         <aside className="hidden lg:flex w-72 flex-col border-r border-slate-200/60 bg-white/70 backdrop-blur h-screen overflow-y-auto">
           <div className="px-6 pt-8 pb-6">
@@ -75,7 +75,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                         <span>{item.label}</span>
                         <span
                           className={`h-2 w-2 rounded-full transition-transform duration-200 ${
-                            isDropdownOpen || isSubmenuActive ? 'bg-amber-300' : 'bg-slate-300'
+                            isDropdownOpen || isSubmenuActive ? 'bg-lime-300' : 'bg-slate-300'
                           } ${isDropdownOpen ? 'rotate-180' : ''}`}
                         />
                       </button>
@@ -89,7 +89,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                         }`}
                       >
                         <span>{item.label}</span>
-                        <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-amber-300' : 'bg-slate-300'}`} />
+                        <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-lime-300' : 'bg-slate-300'}`} />
                       </Link>
                     )}
 
