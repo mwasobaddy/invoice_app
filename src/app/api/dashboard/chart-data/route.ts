@@ -16,18 +16,26 @@ export async function GET(request: NextRequest) {
     const userId = user.id;
     const period = request.nextUrl.searchParams.get('period') || 'monthly';
 
-    const invoices = await prisma.invoice.findMany({
-      where: { userId },
-      include: { payments: true },
-    });
+    // limit range to avoid OOM on large tables — last 12 months or 5 years
+    const since = new Date();
+    if (period === 'yearly') since.setFullYear(since.getFullYear() - 5);
+    else since.setMonth(since.getMonth() - 12);
 
-    const expenses = await prisma.expense.findMany({
-      where: { userId },
-    });
-
-    const budgets = await prisma.budget.findMany({
-      where: { userId },
-    });
+    const [invoices, expenses, budgets] = await Promise.all([
+      prisma.invoice.findMany({
+        where: { userId, issueDate: { gte: since }, deletedAt: null } as never,
+        include: { payments: true },
+        orderBy: { issueDate: 'asc' },
+      }),
+      prisma.expense.findMany({
+        where: { userId, date: { gte: since }, deletedAt: null } as never,
+        orderBy: { date: 'asc' },
+      }),
+      prisma.budget.findMany({
+        where: { userId, startDate: { gte: since }, deletedAt: null } as never,
+        orderBy: { startDate: 'asc' },
+      }),
+    ]);
 
     // Define chart data structure
     interface ChartData {
@@ -80,17 +88,18 @@ export async function GET(request: NextRequest) {
       }
 
       const data = chartDataMap.get(dateKey)!;
-      data.invoices += invoice.amount;
+      const invAmt = Number((invoice.amount as unknown as { toString(): string }).toString());
+      data.invoices += invAmt;
 
       const paidAmount = invoice.payments.reduce(
-        (sum: number, payment: typeof invoice.payments[0]) => sum + payment.amount,
+        (sum: number, payment: typeof invoice.payments[0]) => sum + Number((payment.amount as unknown as { toString(): string }).toString()),
         0
       );
 
       if (invoice.status === 'paid') {
-        data.paidInvoices += invoice.amount;
+        data.paidInvoices += invAmt;
       } else {
-        const remaining = invoice.amount - paidAmount;
+        const remaining = invAmt - paidAmount;
         data.pendingInvoices += remaining > 0 ? remaining : 0;
       }
     });
@@ -111,7 +120,7 @@ export async function GET(request: NextRequest) {
       }
 
       const data = chartDataMap.get(dateKey)!;
-      data.expenses += expense.amount;
+      data.expenses += Number((expense.amount as unknown as { toString(): string }).toString());
     });
 
     // Add budgets data
@@ -130,7 +139,7 @@ export async function GET(request: NextRequest) {
       }
 
       const data = chartDataMap.get(dateKey)!;
-      data.budget += budget.limit;
+      data.budget += Number((budget.limit as unknown as { toString(): string }).toString());
     });
 
     // Sort by date
