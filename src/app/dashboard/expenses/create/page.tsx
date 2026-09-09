@@ -12,6 +12,8 @@ export default function CreateExpensePage() {
   const [amount, setAmount] = useState('')
   const [category, setCategory] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,6 +29,7 @@ export default function CreateExpensePage() {
           amount: parseFloat(amount),
           category,
           date: new Date(date),
+          receipt: receiptUrl || undefined,
         }),
       })
 
@@ -120,6 +123,37 @@ export default function CreateExpensePage() {
               <option value="healthcare">Healthcare</option>
               <option value="other">Other</option>
             </select>
+          </div>
+
+          {/* Receipt + AI */}
+          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4">
+            <p className="text-sm font-semibold text-slate-900">Receipt (optional) — AI parse</p>
+            <input
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const fd = new FormData()
+                fd.append("file", file)
+                const res = await fetch("/api/expenses/upload", { method: "POST", body: fd })
+                if (res.ok) {
+                  const { url } = await res.json()
+                  setReceiptUrl(url)
+                  setAiLoading(true)
+                  const aiRes = await fetch("/api/ai/parse-receipt", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageUrl: url }) })
+                  if (aiRes.ok) {
+                    const ai = await aiRes.json()
+                    if (ai.description) setDescription(ai.description)
+                    if (ai.amount) setAmount(String(ai.amount))
+                    if (ai.category) setCategory(ai.category)
+                  }
+                  setAiLoading(false)
+                }
+              }}
+              className="mt-2 block w-full text-sm text-slate-600"
+            />
+            {receiptUrl && <p className="mt-2 text-xs text-emerald-600">Uploaded: {receiptUrl} {aiLoading ? "• AI parsing…" : "• AI prefilled"}</p>}
           </div>
         </div>
 
