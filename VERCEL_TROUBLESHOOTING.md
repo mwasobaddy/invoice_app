@@ -413,6 +413,28 @@ vercel redeploy
 
 ---
 
+## 🔴 Cron & Blob Issues
+
+### Cron returns 401
+
+**Cause**: `CRON_SECRET` not set or `vercel.json` missing
+
+**Solution:**
+1. Add to Vercel env: `CRON_SECRET=$(openssl rand -base64 32)` for `Production/Preview`
+2. Verify `vercel.json` has:
+   ```json
+   { "crons": [{ "path": "/api/crons/overdue", "schedule": "0 2 * * *" }, { "path": "/api/crons/recurring", "schedule": "0 3 1 * *" }, { "path": "/api/crons/fx", "schedule": "0 4 * * *" }] }
+   ```
+3. Test: `curl -H "Authorization: Bearer $CRON_SECRET" https://invoice-app-omega-ten.vercel.app/api/crons/overdue`
+
+### Blob upload 500
+
+**Cause**: `BLOB_READ_WRITE_TOKEN` not set
+
+**Solution:** Vercel Dashboard → Storage → Blob → Create Store → Connect to project, or `vercel env add BLOB_READ_WRITE_TOKEN`
+
+---
+
 ## Still Having Issues?
 
 1. **Collect information**:
