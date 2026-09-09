@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "cleanUrls": true,
+  "crons": [
+    {
+      "path": "/api/crons/overdue",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}
