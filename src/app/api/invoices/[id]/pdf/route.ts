@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
-// P0: PDF generation — placeholder using @react-pdf/renderer compatible structure
-// Full implementation: import { renderToStream } from "@react-pdf/renderer" and send PDF
+import { InvoicePDF } from "@/components/InvoicePDF";
+import { renderToStream } from "@react-pdf/renderer";
+import React from "react";
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireAuth();
@@ -14,20 +16,38 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     });
     if (!invoice) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
 
-    // For now, return JSON + instruction — replace with actual PDF stream
-    // Example real PDF: const stream = await renderToStream(<InvoicePDF invoice={invoice} />)
-    // return new NextResponse(stream as unknown as BodyInit, { headers: { "Content-Type": "application/pdf", "Content-Disposition": `attachment; filename="${invoice.invoiceNo}.pdf"` } });
-
-    return NextResponse.json({
-      message: "PDF generation ready — wire @react-pdf/renderer here",
-      invoiceNo: invoice.invoiceNo,
-      preview: {
+    const doc = React.createElement(InvoicePDF, {
+      invoice: {
+        invoiceNo: invoice.invoiceNo,
         clientName: invoice.clientName,
+        clientEmail: invoice.clientEmail,
         amount: invoice.amount.toString(),
-        status: invoice.status,
-        items: invoice.items.length,
+        currency: invoice.currency,
+        status: invoice.status as string,
+        issueDate: new Date(invoice.issueDate).toISOString().split("T")[0],
+        dueDate: new Date(invoice.dueDate).toISOString().split("T")[0],
+        description: invoice.description,
+        items: invoice.items.map((it) => ({
+          description: it.description,
+          quantity: it.quantity.toString(),
+          rate: it.rate.toString(),
+          amount: it.amount.toString(),
+        })),
       },
-      hint: "Install @react-pdf/renderer already done, implement InvoicePDF component in src/components/InvoicePDF.tsx",
+    });
+
+    const stream = await renderToStream(doc as never);
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of stream as unknown as AsyncIterable<Uint8Array>) {
+      chunks.push(chunk);
+    }
+    const buffer = Buffer.concat(chunks);
+    return new NextResponse(buffer as unknown as BodyInit, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="${invoice.invoiceNo}.pdf"`,
+        "Content-Length": String(buffer.length),
+      },
     });
   } catch (e) {
     if (e instanceof Error && e.message.includes("Unauthorized")) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
