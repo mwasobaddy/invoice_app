@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-utils';
 import { prisma } from '@/lib/prisma';
+import { CreateExpenseSchema, formatZodError } from '@/lib/schemas';
 
 /**
  * GET /api/expenses
@@ -13,47 +14,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const userId = user.id;
-    const pageParam = request.nextUrl.searchParams.get('page');
-    const limitParam = request.nextUrl.searchParams.get('limit');
-
-    if (pageParam && limitParam) {
-      const page = Math.max(1, parseInt(pageParam, 10) || 1);
-      const pageSize = Math.max(1, parseInt(limitParam, 10) || 10);
-      const skip = (page - 1) * pageSize;
-
-      const [items, total] = await Promise.all([
-        prisma.expense.findMany({
-          where: { userId },
-          orderBy: { date: 'desc' },
-          skip,
-          take: pageSize,
-          include: {
-            budget: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        }),
-        prisma.expense.count({ where: { userId } }),
-      ]);
-
-      return NextResponse.json({ items, total, page, pageSize });
-    }
-
-    const expenses = await prisma.expense.findMany({
-      where: { userId },
-      orderBy: { date: 'desc' },
-    });
-
-    return NextResponse.json(expenses);
+    const page = Math.max(1, parseInt(request.nextUrl.searchParams.get('page') || '1', 10));
+    const pageSize = Math.min(100, Math.max(1, parseInt(request.nextUrl.searchParams.get('limit') || '20', 10)));
+    const skip = (page - 1) * pageSize;
+    const q = request.nextUrl.searchParams.get('q')?.trim();
+    const category = request.nextUrl.searchParams.get('category');
+    const where: Record<string, unknown> = { userId };
+    if (q) (where as Record<string, unknown>).OR = [{ description: { contains: q, mode: 'insensitive' } }, { category: { contains: q, mode: 'insensitive' } }];
+    if (category) (where as Record<string, unknown>).category = category;
+    const [items, total] = await Promise.all([
+      prisma.expense.findMany({
+        where: where as never,
+        orderBy: { date: 'desc' },
+        skip, take: pageSize,
+        include: { budget: { select: { id: true, name: true } } },
+      }),
+      prisma.expense.count({ where: where as never }),
+    ]);
+    return NextResponse.json({ items, total, page, pageSize });
   } catch (error) {
     console.error('Error fetching expenses:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch expenses' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch expenses' }, { status: 500 });
   }
 }
 
@@ -68,18 +49,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const userId = user.id;
-    const body = await request.json();
+    const raw = await request.json();
+    const parsed = CreateExpenseSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: formatZodError(parsed.error) }, { status: 400 });
+    }
+    const body = parsed.data;
 
     const expense = await prisma.expense.create({
       data: {
         userId,
-        budgetId: body.budgetId,
+        budgetId: body.budgetId || null,
         description: body.description,
         amount: body.amount,
         category: body.category,
-        date: new Date(body.date),
-        notes: body.notes,
-        receipt: body.receipt,
+        date: body.date,
+        notes: body.notes || null,
+        receipt: body.receipt || null,
       },
     });
 
@@ -91,11 +77,8 @@ export async function POST(request: NextRequest) {
       });
 
       if (budget) {
-        const totalSpent = budget.expenses.reduce(
-          (sum: number, exp: { amount: number; }) => sum + exp.amount,
-          0
-        );
-        const remaining = budget.limit - totalSpent;
+        const totalSpent = budget.expenses.reduce((sum: number, exp) => sum + Number((exp.amount as unknown as { toString(): string }).toString()), 0);
+        const remaining = Number((budget.limit as unknown as { toString(): string }).toString()) - totalSpent;
 
         await prisma.budget.update({
           where: { id: body.budgetId },
