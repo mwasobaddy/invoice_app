@@ -62,15 +62,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
 
-    // OAuth providers
+    // OAuth providers — support both naming conventions
     GithubProvider({
-      clientId: process.env.GITHUB_ID || "",
-      clientSecret: process.env.GITHUB_SECRET || "",
+      clientId: process.env.GITHUB_ID || process.env.AUTH_GITHUB_ID || "",
+      clientSecret: process.env.GITHUB_SECRET || process.env.AUTH_GITHUB_SECRET || "",
     }),
 
     GoogleProvider({
-      clientId: process.env.GOOGLE_ID || "",
-      clientSecret: process.env.GOOGLE_SECRET || "",
+      clientId: process.env.GOOGLE_ID || process.env.AUTH_GOOGLE_ID || "",
+      clientSecret: process.env.GOOGLE_SECRET || process.env.AUTH_GOOGLE_SECRET || "",
     }),
   ],
 
@@ -98,9 +98,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         ) {
           // Account exists with different provider - linking is allowed
           // PrismaAdapter will handle linking automatically
-          console.log(
-            `Linking ${account.provider} account to existing user: ${email}`
-          );
           return true;
         }
       }
@@ -127,13 +124,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   events: {
     async signIn({ user }) {
-      console.log(`User ${user.email} signed in`)
+      // structured log placeholder — replace with pino/sentry when added
     },
     async signOut(params) {
-      const email = "token" in params ? params.token?.email : undefined
-      if (email) {
-        console.log(`User ${email} signed out`)
-      }
+      // noop — handled via audit log if needed
     },
   },
 
