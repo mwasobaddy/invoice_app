@@ -141,6 +141,21 @@ See [prisma/schema.prisma](./prisma/schema.prisma) for the complete schema.
 - `PUT /api/budgets/[id]` - Update budget
 - `DELETE /api/budgets/[id]` - Delete budget
 
+### Clients
+- `GET /api/clients?q=` - Search clients
+- `POST /api/clients` - Create client
+
+### Exports & Cron
+- `GET /api/invoices/export?format=csv` - CSV export
+- `GET /api/invoices/[id]/pdf` - PDF stream (Invoice Atlas branding)
+- `GET /api/crons/overdue` - Overdue automation (Vercel Cron)
+- `GET /api/crons/recurring` - Recurring invoices
+- `GET /api/crons/fx` - FX rates placeholder
+- `POST /api/expenses/upload` - Vercel Blob receipt upload
+- `POST /api/auth/verify` - Email verification
+- `POST /api/webhooks` - Zapier webhooks
+- `POST /api/ai/parse-receipt` - AI receipt parse (placeholder)
+
 ## 🔧 Development Commands
 
 ```bash
