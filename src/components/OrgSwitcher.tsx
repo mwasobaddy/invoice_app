@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export default function OrgSwitcher({ orgs = [] as Array<{ id: string; name: string }> }) {
+export default function OrgSwitcher({ orgs: initialOrgs = [] as Array<{ id: string; name: string }> }) {
+  const [orgs, setOrgs] = useState(initialOrgs);
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    fetch("/api/orgs").then((r) => r.json()).then((data) => Array.isArray(data) && setOrgs(data)).catch(() => {});
+  }, []);
   return (
     <div className="relative">
       <button
