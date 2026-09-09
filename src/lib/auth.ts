@@ -6,6 +6,10 @@ import GoogleProvider from "next-auth/providers/google"
 import { prisma } from "@/lib/prisma"
 import { compare } from "bcryptjs"
 
+if (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length < 32) {
+  throw new Error("NEXTAUTH_SECRET must be at least 32 characters — generate with: openssl rand -base64 32");
+}
+
 class OAuthNoPasswordError extends CredentialsSignin {
   code = "oauth_no_password"
 }
