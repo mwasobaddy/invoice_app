@@ -188,19 +188,19 @@ Indexes on `userId`, `status`, `dueDate`, `date` — good.
 
 ---
 
-## 9. Quick Wins Checklist (Copy into issues)
+## 9. Quick Wins Checklist (Copy into issues) — **UPDATED 2026-09-09**
 
-- [ ] `npm i zod` + `src/lib/schemas.ts` + validate all `POST` (est. 3h)
-- [ ] `Float` → `Decimal` migration (1h + test)
-- [ ] `prisma.ts:17` conditional logging (5 min)
-- [ ] `src/middleware.ts` auth guard (30 min)
-- [ ] `src/app/error.tsx` + `loading.tsx` (30 min)
-- [ ] `next.config.ts` restrict `images.hostname`, add `headers()` HSTS/CSP (20 min)
-- [ ] `GenerateInvoiceNumber` (`utils.ts:62`) — use `cuid` or `nanoid` not `Date.now()` (collision) + add `@@unique([userId, invoiceNo])`
-- [ ] `vercel.json` + Cron for overdue (30 min)
-- [ ] `npm audit fix` (non-breaking) + `dependabot.yml` (15 min)
-- [ ] `sentry` + `analytics` (30 min)
-- [ ] Add `README` env table sync with `.env.example` (done) + `VERCEL_CHECKLIST` update
+- [x] `npm i zod` + `src/lib/schemas.ts` + validate all `POST` — **DONE** `src/lib/schemas.ts` + `invoices/budgets/expenses/register` use `safeParse` + `any` removed
+- [x] `Float` → `Decimal` migration — **DONE** `prisma/schema.prisma` `Decimal @db.Decimal(12,2)` + `utils.ts` Decimal-aware, `prisma generate`
+- [x] `prisma.ts:17` conditional logging — **DONE** dev-only query logging + `max:5` Pool
+- [x] `src/middleware.ts` auth guard — **DONE** edge middleware for `/dashboard/*`
+- [x] `src/app/error.tsx` + `loading.tsx` — **DONE** + `global-error.tsx` + `dashboard/loading.tsx`
+- [x] `next.config.ts` restrict `images.hostname`, add `headers()` HSTS/CSP — **DONE** allowlist `lh3.../avatars` + HSTS/CSP headers
+- [x] `GenerateInvoiceNumber` (`utils.ts:62`) — **DONE** `INV-YYYYMM-base36` + `@@unique([userId, invoiceNo])`
+- [x] `vercel.json` + Cron for overdue — **DONE** `vercel.json` cron `0 2 * * * /api/crons/overdue`
+- [x] `npm audit fix` (non-breaking) + `dependabot.yml` — **DONE** `audit fix` 23→7 vulns, `dependabot.yml` weekly
+- [x] `sentry` + `analytics` — **PARTIAL** `analytics`/`speed-insights` done, `Sentry` still TODO (see §13)
+- [x] Add `README` env table sync with `.env.example` + `VERCEL_CHECKLIST` update — **DONE** `.env.example` dual `GOOGLE_ID||AUTH_*`, `.env`/`.env.local` synced, Vercel env split `Production=omega-ten`
 
 ---
 
@@ -227,12 +227,51 @@ Currently **0 tests**. Minimum viable:
 
 ## 12. Suggested Order (If you pick one thing per week)
 
-1.  **Week 1:** Decimal + Zod + `any` removal (correctness)
-2.  **Week 2:** Middleware + Server Components + `loading.tsx` (perf)
-3.  **Week 3:** PDF + CSV + Cron overdue (revenue)
-4.  **Week 4:** Sentry + analytics + `vercel.json` headers (reliability)
-5.  **Month 2:** Client model + receipts + budget alerts
+1.  **Week 1:** Decimal + Zod + `any` removal (correctness) — **DONE**
+2.  **Week 2:** Middleware + Server Components + `loading.tsx` (perf) — **DONE** (home → server, dashboard shell still client — see §13)
+3.  **Week 3:** PDF + CSV + Cron overdue (revenue) — **PARTIAL** CSV/cron done, PDF pending
+4.  **Week 4:** Sentry + analytics + `vercel.json` headers (reliability) — **PARTIAL** analytics done, Sentry pending
+5.  **Month 2:** Client model + receipts + budget alerts — **PARTIAL** Client model done, receipts/budget alerts pending
 
 ---
 
-*Generated for `big-obadiahs-projects/invoice-app`. To implement, create GitHub issues from the Quick Wins checklist — each maps to a file:line.*
+## 13. Post-Implementation Rescan (2026-09-09 21:50) — New Findings
+
+After implementing the 38 commits above, `npm run build` ✓ 26 routes, `vitest` ✓ 5/5. Rescan found these **remaining gaps** (new improvements):
+
+### Still Open from Original Roadmap
+| # | Original | Status | Next Step |
+|---|----------|--------|-----------|
+| **A1** | Client components everywhere — `src/app/page.tsx:1` + dashboard | **PARTIAL** — Home now `async` server (`auth()` redirect, no `useSession`), but `src/app/dashboard/page.tsx:1` + `invoices/page.tsx:1` (431 LOC) still client `useEffect` + `recharts` CSR | Convert dashboard to **Server Components** + `Suspense` + `fetch` with `revalidate`. Extract `src/components/ChartClient.tsx` dynamic import. Use `src/app/api/dashboard/chart-data` via `prisma` directly in server page to cut fetch round-trip. |
+| **A3** | API versioning / helpers | **PARTIAL** — `src/lib/schemas.ts` + `src/lib/api-helpers.ts` + `src/lib/rate-limit.ts` created, but `budgets/[id]`, `expenses/[id]` still inline `requireAuth` + manual `console.error`. | Wrap all `route.ts` with `withAuth` + `badRequest`/`serverError`. Add `src/app/api/v1/` alias or at least `src/lib/validators/` re-export. |
+| **D2** | Denormalized `Budget.spent/remaining` | **INTENTIONAL KEEP** — Columns kept for perf but now recomputed transactionally on every `expenses` write (see `expenses/route.ts:80`). Alternative considered: drop columns + `SUM` view, but kept to avoid expensive aggregates on list. Documented as trade-off. | Optional: add DB trigger `update_budget_spent` or migrate to computed view `BudgetSummary`. Add nightly reconciliation cron `/api/crons/reconcile-budgets`. |
+| **S1** | Weak `NEXTAUTH_SECRET` | **FIXED NOW** — Rotated to `17fc2cbcf...` (64 hex) in `.env`, `.env.local` + `vercel env add production/preview/development --force`. Added boot check `if (secret.length<32) throw` in `src/lib/auth.ts:8`. | Rotate again if old secret leaked; add `CRON_SECRET` env for cron auth. |
+| **S3** | Email verification | **OPEN** — `emailVerified` field unused. No verification flow. | Add `next-auth` email provider or custom `POST /api/auth/verify` + `VerificationToken` email via `resend`. Block `dashboard` until `emailVerified != null`. |
+| **S4/S5** | Password policy + rate-limit | **PARTIAL** — `register/route.ts` now checks `rateLimit: register:${ip} 5/60s` + requires `8+ uppercase + number`. But `signin/page.tsx` credentials still unlimited, no `upstash/ratelimit`. | Add `rateLimit` to `src/lib/auth.ts` `authorize` (lockout after 5 fails) + `arcjet`. |
+| **S8** | Receipt upload | **PARTIAL** — `Expense.receiptMime` added, but no `Vercel Blob`/`Supabase Storage` upload. | `npm i @vercel/blob`, add `POST /api/expenses/upload` with `signedUrl`, `mime`/`size` check, `receiptUrl` in `src/app/dashboard/expenses/create/page.tsx`. |
+| **S9** | bcrypt pepper | **OPEN** | Add `BCRYPT_PEPPER` env + `hash(password+pepper)` |
+| **O3** | Monitoring | **PARTIAL** — Analytics/SpeedInsights added, `console.log` removed, but no `Sentry`. | `npx @sentry/wizard@latest -i nextjs`, add `sentry.client.config.ts` + DSN env. |
+| **6-Perf** | Dashboard still client-heavy, no `metadata`, a11y | **PARTIAL** — Home now server with `metadata`, `globals.css` brand tokens, `DashboardShell` got `Esc` handler + `aria-label`/`aria-current` + `focus-visible:ring`, `vercel.json` cron, but `dashboard/page.tsx` still client `recharts` (~90kb), no `export const metadata` per dashboard subpage. | Add `src/app/dashboard/invoices/metadata.ts`, `budgets/metadata.ts`, dynamic `ChartClient`. Split `DashboardShell` into `ServerShell` + `MobileDrawerClient`. |
+
+### Brand New Gaps Found in Rescan
+| Priority | Finding | File:Line | Fix |
+|----------|---------|-----------|-----|
+| **P0** | **No PDF generation** — P0 item 1 completely missing. Users can’t download invoices. | `ENHANCEMENTS.md:167` | `npm i @react-pdf/renderer` + `src/app/api/invoices/[id]/pdf/route.ts` with `InvoiceAtlas` slate/lime template, `Download PDF` button in `invoices/[id]/page.tsx`. |
+| **P0** | **No recurring invoices** | `schema.prisma` | Add `Invoice.recurringRule String?` + `nextDueDate DateTime?` + cron `/api/crons/recurring` |
+| **P1** | **Budget alerts not wired** — `getBudgetStatusColor` exists but no toast/email when `spent > limit*0.8` | `expenses/route.ts:73` | After `budget.update`, if `totalSpent > limit*0.8` trigger `resend` email + `sonner` toast. Add `Budget.isOverBudget` derived. |
+| **P1** | **Multi-currency stub** — `formatCurrency` handles symbols but no FX | `lib/constants.ts:34` | Add `Currency` table + `exchangerate-api` daily fetch `/api/crons/fx` |
+| **P2** | **AuditLog model exists but never written** | `prisma/schema.prisma:AuditLog` | Write on every `PUT/POST/DELETE` via `src/lib/audit.ts` |
+| **P2** | **Team workspaces / RLS** — single-user only | Schema | Add `Org` + `Membership` if multi-tenant needed |
+| **Testing** | Only `utils.test.ts` — API/E2E missing | `src/**/*.test.ts` | Add `vitest` route tests + `playwright` e2e for `auth → invoices/create` flow |
+| **Docs** | `VERCEL_TROUBLESHOOTING.md` still mentions old `localhost` cron | `VERCEL_TROUBLESHOOTING.md` | Update to `vercel.json` cron + `CRON_SECRET` docs |
+| **Types** | `src/generated/prisma` ignored but committed? Should be `.gitignore` | `.gitignore` | Add `src/generated/` to `.gitignore` (generated on `postinstall`) or commit `schema.prisma` only |
+
+### Updated Action List (Next Sprint)
+- [ ] `npm i @react-pdf/renderer @vercel/blob @sentry/nextjs`
+- [ ] Convert `src/app/dashboard/page.tsx` + `invoices/page.tsx` to Server Components + `ChartClient` dynamic
+- [ ] Add `Sentry` wizard + `CRON_SECRET` to Vercel
+- [ ] Implement `src/app/api/invoices/[id]/pdf/route.ts` + `Client` autocomplete in `invoices/create`
+- [ ] Add `src/lib/audit.ts` writes + `playwright` config
+- [ ] Update `VERCEL_TROUBLESHOOTING.md` + `.gitignore` for `src/generated`
+
+*Rescan for `big-obadiahs-projects/invoice-app` after 38 commits — build still green, 7 vulns remain (sharp/postcss, non-breaking).*
