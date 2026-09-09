@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit';
 
 interface RouteParams {
   params: Promise<{
@@ -76,6 +77,10 @@ export async function PUT(
       },
     });
 
+    // audit + fetch userId for log
+    const existingForAudit = await prisma.invoice.findUnique({ where: { id: invoiceId }, select: { userId: true } });
+    if (existingForAudit) await writeAuditLog({ userId: (existingForAudit as { userId: string }).userId, action: "update", entity: "Invoice", entityId: invoiceId, diff: body as Record<string, unknown>, ip: request.headers.get("x-forwarded-for") });
+
     return NextResponse.json(invoice);
   } catch (error) {
     console.error('Error updating invoice:', error);
@@ -97,9 +102,12 @@ export async function DELETE(
   try {
     const { id: invoiceId } = await params;
 
+    const toDelete = await prisma.invoice.findUnique({ where: { id: invoiceId }, select: { userId: true } });
     await prisma.invoice.delete({
       where: { id: invoiceId },
     });
+
+    if (toDelete) await writeAuditLog({ userId: (toDelete as { userId: string }).userId, action: "delete", entity: "Invoice", entityId: invoiceId, ip: request.headers.get("x-forwarded-for") });
 
     return NextResponse.json(
       { message: 'Invoice deleted successfully' },
