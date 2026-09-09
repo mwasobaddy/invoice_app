@@ -39,15 +39,13 @@ export async function GET() {
     const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     expenses.forEach((expense: typeof expenses[0]) => {
-      stats.totalAmount += expense.amount;
-
-      // Count expenses this month
+      const amt = Number((expense.amount as unknown as { toString(): string }).toString());
+      stats.totalAmount += amt;
       if (expense.date >= currentMonth && expense.date <= currentMonthEnd) {
         stats.expensesThisMonth += 1;
-        stats.amountThisMonth += expense.amount;
+        stats.amountThisMonth += amt;
       }
     });
-
     stats.averageExpense = expenses.length > 0 ? stats.totalAmount / expenses.length : 0;
 
     return NextResponse.json(stats);
