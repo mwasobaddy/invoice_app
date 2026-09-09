@@ -2,20 +2,22 @@ import { hash, compare } from "bcryptjs"
 import { auth } from "./auth"
 
 /**
- * Hash password with bcryptjs
+ * Hash password with bcryptjs + pepper
  */
 export async function hashPassword(password: string): Promise<string> {
-  return hash(password, 12)
+  const pepper = process.env.BCRYPT_PEPPER || "";
+  return hash(password + pepper, 12)
 }
 
 /**
- * Verify password
+ * Verify password (with pepper)
  */
 export async function verifyPassword(
   password: string,
   hashedPassword: string
 ): Promise<boolean> {
-  return compare(password, hashedPassword)
+  const pepper = process.env.BCRYPT_PEPPER || "";
+  return compare(password + pepper, hashedPassword)
 }
 
 /**
