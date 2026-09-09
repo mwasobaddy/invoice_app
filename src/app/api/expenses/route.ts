@@ -69,7 +69,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update budget spent amount if associated with a budget
+    // Audit log
+    const { writeAuditLog } = await import("@/lib/audit");
+    await writeAuditLog({ userId, action: "create", entity: "Expense", entityId: expense.id, diff: body as Record<string, unknown>, ip: request.headers.get("x-forwarded-for") });
+
+    // Update budget + budget alert (P1: >80% spent)
     if (body.budgetId) {
       const budget = await prisma.budget.findUnique({
         where: { id: body.budgetId },
@@ -78,7 +82,8 @@ export async function POST(request: NextRequest) {
 
       if (budget) {
         const totalSpent = budget.expenses.reduce((sum: number, exp) => sum + Number((exp.amount as unknown as { toString(): string }).toString()), 0);
-        const remaining = Number((budget.limit as unknown as { toString(): string }).toString()) - totalSpent;
+        const limit = Number((budget.limit as unknown as { toString(): string }).toString());
+        const remaining = limit - totalSpent;
 
         await prisma.budget.update({
           where: { id: body.budgetId },
@@ -87,6 +92,12 @@ export async function POST(request: NextRequest) {
             remaining: Math.max(remaining, 0),
           },
         });
+
+        // Budget alert: log + audit when >80%
+        if (totalSpent > limit * 0.8) {
+          await writeAuditLog({ userId, action: "budget_alert", entity: "Budget", entityId: budget.id, diff: { totalSpent, limit, pct: Math.round((totalSpent/limit)*100) }, ip: null });
+          console.warn(`Budget alert: ${budget.name} ${Math.round((totalSpent/limit)*100)}% spent`);
+        }
       }
     }
 
