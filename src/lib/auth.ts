@@ -51,7 +51,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new OAuthNoPasswordError()
         }
 
-        const passwordsMatch = await compare(password, user.password)
+        const pepper = process.env.BCRYPT_PEPPER || "";
+        const passwordsMatch = await compare(password + pepper, user.password)
 
         if (!passwordsMatch) {
           return null
