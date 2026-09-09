@@ -53,6 +53,8 @@ export async function POST(request: NextRequest) {
         notes: data.notes || null,
       },
     });
+    const { writeAuditLog } = await import("@/lib/audit");
+    await writeAuditLog({ userId: user.id!, action: "create", entity: "Client", entityId: client.id, diff: data as Record<string, unknown>, ip: request.headers.get("x-forwarded-for") });
     return NextResponse.json(client, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message.includes('Unauthorized')) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
