@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { writeAuditLog } from '@/lib/audit';
 
 interface RouteParams {
   params: Promise<{
@@ -90,6 +91,8 @@ export async function PUT(
         expenses: true,
       },
     });
+
+    await writeAuditLog({ userId: (existing as { userId: string }).userId, action: "update", entity: "Budget", entityId: budgetId, diff: body as Record<string, unknown>, ip: request.headers.get("x-forwarded-for") });
 
     return NextResponse.json(budget);
   } catch (error) {
