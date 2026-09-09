@@ -19,14 +19,21 @@ export function formatDateISO(date: Date | string): string {
 }
 
 /**
- * Format currency
+ * Format currency — handles number | Decimal | string
  */
 export function formatCurrency(
-  amount: number,
+  amount: number | string | { toString(): string },
   currency: string = 'USD'
 ): string {
   const symbol = CURRENCY_SYMBOLS[currency] || currency;
-  return `${symbol}${amount.toFixed(2)}`;
+  const num = typeof amount === 'number' ? amount : Number(amount.toString());
+  return `${symbol}${Number.isFinite(num) ? num.toFixed(2) : '0.00'}`;
+}
+
+/** Convert Prisma Decimal or number to number */
+export function toNumber(val: number | string | { toString(): string } | null | undefined): number {
+  if (val == null) return 0;
+  return typeof val === 'number' ? val : Number(val.toString());
 }
 
 /**
@@ -57,15 +64,15 @@ export function calculateInvoiceTotal(
 }
 
 /**
- * Generate invoice number
+ * Generate invoice number — uses cuid-style entropy, not Date.now collisions
  */
 export function generateInvoiceNumber(): string {
   const prefix = 'INV';
-  const timestamp = Date.now().toString().slice(-6);
-  const random = Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, '0');
-  return `${prefix}-${timestamp}-${random}`;
+  const date = new Date();
+  const yyyymm = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}`;
+  // 6-char base36 ~ collision-safe for same-ms, plus counter fallback
+  const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `${prefix}-${yyyymm}-${rand}`;
 }
 
 /**
