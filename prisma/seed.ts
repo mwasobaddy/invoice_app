@@ -3,7 +3,13 @@ import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 dotenv.config()
 
-const TARGET_EMAIL = 'kelvinramsiel@gmail.com'
+const TARGET_EMAIL = process.env.SEED_EMAIL || 'kelvinramsiel@gmail.com'
+
+// Guard — never seed production blindly
+if (process.env.NODE_ENV === 'production' && !process.env.ALLOW_SEED) {
+  console.error('Refusing to seed in production without ALLOW_SEED=1');
+  process.exit(1);
+}
 
 const categoryPool = ['Marketing', 'Operations', 'Travel', 'Software', 'Office']
 const expenseCategoryPool = [
@@ -23,7 +29,7 @@ const clientPool = [
   { name: 'Nova Retail', email: 'billing@novaretail.com', phone: '(555) 233-0044' },
 ]
 
-const paymentMethods = ['bank_transfer', 'credit_card', 'cash']
+const paymentMethods = ['bank_transfer', 'credit_card', 'cash'] as const
 
 function mulberry32(seed: number) {
   return () => {
@@ -136,8 +142,8 @@ async function main() {
         const client = pick(clientPool, rand)
         const issueDate = addDays(start, Math.floor(rand() * 20))
         const dueDate = addDays(issueDate, 14 + Math.floor(rand() * 10))
-        const statusPool = ['draft', 'sent', 'paid', 'overdue']
-        const status = pick(statusPool, rand)
+        const statusPool = ['draft', 'sent', 'paid', 'overdue'] as const
+        const status = pick([...statusPool], rand)
         const itemCount = 1 + Math.floor(rand() * 3)
         const items = Array.from({ length: itemCount }).map((_, idx) => {
           const quantity = randomBetween(1, 6, rand)
@@ -178,7 +184,7 @@ async function main() {
             data: {
               invoiceId: invoice.id,
               amount: totalAmount,
-              method: pick(paymentMethods, rand),
+              method: pick([...paymentMethods], rand),
               paidDate: addDays(issueDate, 10),
               reference: `PAY-${invoiceNo}`,
             },
@@ -195,8 +201,8 @@ async function main() {
       })
 
       for (const budget of createdBudgets) {
-        const spent = budget.expenses.reduce((sum: number, exp: { amount: number }) => sum + exp.amount, 0)
-        const remaining = Math.max(0, budget.limit - spent)
+        const spent = budget.expenses.reduce((sum: number, exp: { amount: { toString(): string } | number }) => sum + Number((exp.amount as unknown as { toString(): string }).toString()), 0)
+        const remaining = Math.max(0, Number(budget.limit.toString()) - spent)
         await prisma.budget.update({
           where: { id: budget.id },
           data: {
