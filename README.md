@@ -55,14 +55,19 @@ npm install
 
 Create `.env.local` with your database URL:
 
-**For Supabase:**
+**For Supabase (with sslmode, required for Vercel):**
 ```env
-DATABASE_URL="postgresql://postgres:PASSWORD@db.XXXXXXXXXXXX.supabase.co:5432/postgres?schema=public"
+DATABASE_URL="postgresql://postgres:PASSWORD@db.XXXXXXXXXXXX.supabase.co:5432/postgres?sslmode=require&schema=public"
 ```
 
-**For Neon:**
+**For Neon (pooled, sslmode):**
 ```env
-DATABASE_URL="postgresql://user:password@ep-XXXXXXXXXX.us-east-1.neon.tech/database?schema=public"
+DATABASE_URL="postgresql://user:password@ep-XXXXXXXXXX.us-east-1.neon.tech/database?sslmode=require&schema=public"
+```
+
+**For Prisma Postgres (this project):**
+```env
+DATABASE_URL="postgres://xxx:yyy@db.prisma.io:5432/postgres?sslmode=require&schema=public"
 ```
 
 ### 3. Setup Database
