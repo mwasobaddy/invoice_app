@@ -68,8 +68,8 @@ export async function PUT(
       );
     }
 
-    const spent = existing.expenses.reduce((sum: number, exp: { amount: number; }) => sum + exp.amount, 0);
-    const nextLimit = body.limit ?? existing.limit;
+    const spent = existing.expenses.reduce((sum: number, exp) => sum + Number((exp.amount as unknown as { toString(): string }).toString()), 0);
+    const nextLimit = body.limit != null ? Number(body.limit) : Number((existing.limit as unknown as { toString(): string }).toString());
     const remaining = nextLimit - spent;
 
     const budget = await prisma.budget.update({
