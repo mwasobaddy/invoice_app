@@ -83,12 +83,8 @@ export async function PUT(
       });
 
       if (budget) {
-        const totalSpent = budget.expenses.reduce(
-          (sum: number, exp: { amount: number }) => sum + exp.amount,
-          0
-        );
-        const remaining = budget.limit - totalSpent;
-
+        const totalSpent = budget.expenses.reduce((sum: number, exp) => sum + Number((exp.amount as unknown as { toString(): string }).toString()), 0);
+        const remaining = Number((budget.limit as unknown as { toString(): string }).toString()) - totalSpent;
         await prisma.budget.update({
           where: { id: oldExpense.budgetId },
           data: {
@@ -144,12 +140,8 @@ export async function DELETE(
       });
 
       if (budget) {
-        const totalSpent = budget.expenses.reduce(
-          (sum: number, exp: { amount: number; }) => sum + exp.amount,
-          0
-        );
-        const remaining = budget.limit - totalSpent;
-
+        const totalSpent = budget.expenses.reduce((sum: number, exp) => sum + Number((exp.amount as unknown as { toString(): string }).toString()), 0);
+        const remaining = Number((budget.limit as unknown as { toString(): string }).toString()) - totalSpent;
         await prisma.budget.update({
           where: { id: expense.budgetId },
           data: {
