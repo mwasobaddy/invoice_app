@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth-utils'
 import { RegisterSchema, formatZodError } from '@/lib/schemas'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 /**
  * POST /api/auth/register
@@ -9,6 +10,11 @@ import { RegisterSchema, formatZodError } from '@/lib/schemas'
  */
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    const rl = rateLimit(`register:${ip}`, 5, 60_000);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: 'Too many requests, try again later' }, { status: 429, headers: { 'Retry-After': String(Math.ceil((rl.resetAt - Date.now())/1000)) } });
+    }
     const raw = await request.json()
     const parsed = RegisterSchema.safeParse(raw)
     if (!parsed.success) {
@@ -16,9 +22,9 @@ export async function POST(request: NextRequest) {
     }
     const { email, name, password } = parsed.data
 
-    // Stronger policy: require at least 8 chars, already enforced; optionally enforce complexity (warn)
-    if (password.length < 8) {
-      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+    // Stronger policy: Enforce complexity (S4)
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return NextResponse.json({ error: 'Password must be 8+ chars with uppercase and number' }, { status: 400 })
     }
 
     // Check if user already exists
