@@ -29,14 +29,13 @@ export async function GET() {
     };
 
     budgets.forEach((budget: typeof budgets[0]) => {
-      const spent = budget.expenses.reduce((sum: number, expense: { amount: number; }) => sum + expense.amount, 0);
-
-      stats.totalBudget += budget.limit;
+      const spent = budget.expenses.reduce((sum: number, expense) => sum + Number((expense.amount as unknown as { toString(): string }).toString()), 0);
+      const limit = Number((budget.limit as unknown as { toString(): string }).toString());
+      stats.totalBudget += limit;
       stats.totalSpent += spent;
-      const remaining = budget.limit - spent;
+      const remaining = limit - spent;
       stats.totalRemaining += Math.max(0, remaining);
-
-      if (spent > budget.limit) {
+      if (spent > limit) {
         stats.budgetsOverspent += 1;
       }
     });
