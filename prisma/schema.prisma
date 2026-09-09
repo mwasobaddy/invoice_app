@@ -10,6 +10,28 @@ datasource db {
   provider = "postgresql"
 }
 
+enum InvoiceStatus {
+  draft
+  sent
+  paid
+  overdue
+  cancelled
+}
+
+enum BudgetPeriod {
+  monthly
+  quarterly
+  yearly
+  custom
+}
+
+enum PaymentMethod {
+  credit_card
+  bank_transfer
+  cheque
+  cash
+}
+
 // User model for authentication
 model User {
   id            String    @id @default(cuid())
@@ -24,6 +46,8 @@ model User {
   invoices  Invoice[]
   budgets   Budget[]
   expenses  Expense[]
+  clients   Client[]
+  auditLogs AuditLog[]
   
   // Auth.js relations
   accounts      Account[]
@@ -69,37 +93,63 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// Client directory (P1)
+model Client {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  email     String?
+  phone     String?
+  address   String?  @db.Text
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  invoices  Invoice[]
+
+  @@unique([userId, email])
+  @@index([userId])
+  @@index([name])
+}
+
 // Invoice model
 model Invoice {
   id          String   @id @default(cuid())
-  invoiceNo   String   @unique
+  invoiceNo   String
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
+  clientId    String?
+  client      Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
   clientName  String
   clientEmail String?
   clientPhone String?
   
-  amount      Float
+  amount      Decimal  @db.Decimal(12,2)
   currency    String   @default("USD")
-  status      String   @default("draft") // draft, sent, paid, overdue, cancelled
+  status      InvoiceStatus @default(draft)
   
   issueDate   DateTime
   dueDate     DateTime
   paidDate    DateTime?
   
-  description String?
-  notes       String?
+  description String?  @db.Text
+  notes       String?  @db.Text
   
   items       InvoiceItem[]
   payments    Payment[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
 
+  @@unique([userId, invoiceNo])
   @@index([userId])
   @@index([status])
   @@index([dueDate])
+  @@index([userId, status])
+  @@index([deletedAt])
 }
 
 // Invoice item (line items)
@@ -109,9 +159,9 @@ model InvoiceItem {
   invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   
   description String
-  quantity    Float   @default(1)
-  rate        Float
-  amount      Float
+  quantity    Decimal  @db.Decimal(12,2) @default(1)
+  rate        Decimal  @db.Decimal(12,2)
+  amount      Decimal  @db.Decimal(12,2)
   
   @@index([invoiceId])
 }
@@ -122,11 +172,11 @@ model Payment {
   invoiceId String
   invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   
-  amount    Float
-  method    String   // credit_card, bank_transfer, cheque, cash
+  amount    Decimal  @db.Decimal(12,2)
+  method    PaymentMethod
   paidDate  DateTime
   reference String?
-  notes     String?
+  notes     String?  @db.Text
   
   createdAt DateTime @default(now())
 
@@ -140,10 +190,10 @@ model Budget {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   name      String
-  limit     Float
-  spent     Float   @default(0)
-  remaining Float
-  period    String   // monthly, quarterly, yearly, custom
+  limit     Decimal  @db.Decimal(12,2)
+  spent     Decimal  @db.Decimal(12,2) @default(0)
+  remaining Decimal  @db.Decimal(12,2)
+  period    BudgetPeriod
   
   startDate DateTime
   endDate   DateTime
@@ -157,9 +207,13 @@ model Budget {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
+  @@unique([userId, name])
   @@index([userId])
   @@index([period])
+  @@index([userId, startDate])
+  @@index([deletedAt])
 }
 
 // Expense model for budget tracking
@@ -172,17 +226,37 @@ model Expense {
   budget    Budget?  @relation(fields: [budgetId], references: [id], onDelete: SetNull)
   
   description String
-  amount    Float
+  amount    Decimal  @db.Decimal(12,2)
   category  String
   date      DateTime
   
-  notes     String?
+  notes     String?  @db.Text
   receipt   String? // file path or URL
+  receiptMime String?
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 
   @@index([userId])
   @@index([budgetId])
   @@index([date])
+  @@index([userId, date])
+  @@index([deletedAt])
+}
+
+// Audit trail (P2)
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  entity    String
+  entityId  String
+  diff      Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
 }
