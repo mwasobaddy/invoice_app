@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 const navItems = [
   { label: 'Overview', href: '/dashboard' },
@@ -44,6 +44,14 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     return session?.user?.name || session?.user?.email || 'Signed in'
   }, [session])
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false)
+    }
+    if (mobileOpen) document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [mobileOpen])
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="flex h-screen overflow-y-hidden">
@@ -53,7 +61,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
             <div className="mt-2 text-2xl font-semibold text-slate-900">Invoice Atlas</div>
           </div>
 
-          <nav className="flex-1 px-4">
+          <nav className="flex-1 px-4" aria-label="Dashboard">
             <div className="space-y-2">
               {navItems.map((item) => {
                 const isActive = pathname === item.href
