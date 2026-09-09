@@ -30,16 +30,14 @@ export async function GET() {
     };
 
     invoices.forEach((invoice: typeof invoices[0]) => {
-      stats.totalAmount += invoice.amount;
-
-      // Calculate paid amount from payments
-      const paidAmount = invoice.payments.reduce((sum: number, payment: typeof invoice.payments[0]) => sum + payment.amount, 0);
-
+      const amt = Number((invoice.amount as unknown as { toString(): string }).toString());
+      stats.totalAmount += amt;
+      const paidAmount = invoice.payments.reduce((sum: number, payment: typeof invoice.payments[0]) => sum + Number((payment.amount as unknown as { toString(): string }).toString()), 0);
       if (invoice.status === 'paid') {
-        stats.paidAmount += invoice.amount;
+        stats.paidAmount += amt;
         stats.paidInvoices += 1;
       } else if (['draft', 'sent', 'overdue'].includes(invoice.status)) {
-        stats.pendingAmount += invoice.amount - paidAmount;
+        stats.pendingAmount += amt - paidAmount;
         stats.pendingInvoices += 1;
       }
     });
