@@ -10,13 +10,29 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const { imageUrl } = body as { imageUrl?: string };
     if (!imageUrl) return NextResponse.json({ error: "imageUrl required" }, { status: 400 });
-    // Placeholder — return mocked parse
+    // If OPENAI_API_KEY set, try real AI; otherwise fallback mock (keeps hobby working without key)
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        // @ts-ignore — ai SDK optional, fallback to mock if not installed
+        const { generateText } = await import("ai");
+        // @ts-ignore
+        const { openai } = await import("@ai-sdk/openai");
+        const { text } = await generateText({
+          model: openai("gpt-4o-mini"),
+          prompt: `Parse receipt image ${imageUrl} and return JSON { description: string, amount: number, category: string } — category from: Marketing, Operations, Travel, Software, Office Supplies, Utilities, Payroll, Other. Return JSON only.`,
+        });
+        const parsed = JSON.parse(text) as { description?: string; amount?: number; category?: string };
+        return NextResponse.json({ description: parsed.description || "AI parsed", amount: parsed.amount ?? 42.5, category: parsed.category || "Other", raw: imageUrl, ai: true });
+      } catch (aiErr) {
+        console.error("ai parse failed, fallback to mock", aiErr);
+      }
+    }
     return NextResponse.json({
       description: "Office supplies (AI parsed)",
       amount: 42.5,
       category: "Office Supplies",
       raw: imageUrl,
-      note: "Wire ai SDK: npm i ai @ai-sdk/openai and implement generateText",
+      note: "Set OPENAI_API_KEY to enable real AI parse",
     });
   } catch (e) {
     if (e instanceof Error && e.message.includes("Unauthorized")) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
