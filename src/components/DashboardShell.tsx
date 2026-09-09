@@ -183,6 +183,9 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                 Close
               </button>
             </div>
+            <div className="mt-4">
+              <OrgSwitcher orgs={[]} />
+            </div>
 
             <div className="mt-6 grid gap-3">
               {navItems.map((item) => (
