@@ -115,9 +115,15 @@ export async function DELETE(
   try {
     const { id: budgetId } = await params;
 
+    const existingDel = await prisma.budget.findUnique({ where: { id: budgetId } });
     await prisma.budget.delete({
       where: { id: budgetId },
     });
+
+    if (existingDel) {
+      const { writeAuditLog } = await import("@/lib/audit");
+      await writeAuditLog({ userId: (existingDel as { userId: string }).userId, action: "delete", entity: "Budget", entityId: budgetId, ip: request.headers.get("x-forwarded-for") });
+    }
 
     return NextResponse.json(
       { message: 'Budget deleted successfully' },
