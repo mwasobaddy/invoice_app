@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth-utils';
 import { prisma } from '@/lib/prisma';
 import { CreateInvoiceSchema, formatZodError } from '@/lib/schemas';
 import { calculateInvoiceTotal, generateInvoiceNumber } from '@/lib/utils';
+import { writeAuditLog } from '@/lib/audit';
 
 /**
  * GET /api/invoices
@@ -130,6 +131,8 @@ export async function POST(request: NextRequest) {
         items: true,
       },
     });
+
+    await writeAuditLog({ userId, action: "create", entity: "Invoice", entityId: invoice.id, diff: { invoiceNo, amount }, ip: request.headers.get("x-forwarded-for") });
 
     return NextResponse.json(invoice, { status: 201 });
   } catch (error) {
