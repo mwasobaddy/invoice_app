@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth-utils'
-import { isValidEmail } from '@/lib/utils'
+import { RegisterSchema, formatZodError } from '@/lib/schemas'
 
 /**
  * POST /api/auth/register
@@ -9,28 +9,16 @@ import { isValidEmail } from '@/lib/utils'
  */
 export async function POST(request: NextRequest) {
   try {
-    const { email, name, password } = await request.json()
-
-    // Validation
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      )
+    const raw = await request.json()
+    const parsed = RegisterSchema.safeParse(raw)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Validation failed', details: formatZodError(parsed.error) }, { status: 400 })
     }
+    const { email, name, password } = parsed.data
 
-    if (!isValidEmail(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email address' },
-        { status: 400 }
-      )
-    }
-
+    // Stronger policy: require at least 8 chars, already enforced; optionally enforce complexity (warn)
     if (password.length < 8) {
-      return NextResponse.json(
-        { error: 'Password must be at least 8 characters' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
     }
 
     // Check if user already exists
