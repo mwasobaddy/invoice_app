@@ -14,15 +14,22 @@ export default function OrgSwitcher({ orgs: initialOrgs = [] as Org[] }) {
   useEffect(() => {
     fetch('/api/orgs')
       .then((r) => r.json())
-      .then((data) => Array.isArray(data) && setOrgs(data))
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setOrgs(data);
+          const stored = typeof window !== 'undefined' ? localStorage.getItem('currentOrgId') : null;
+          // Fix: if stored id is invalid (e.g., deleted Test/Personal org), reset to first org
+          if (stored && data.some((o: Org) => o.id === stored)) {
+            setCurrentId(stored);
+          } else if (data.length > 0) {
+            const firstId = data[0].id;
+            setCurrentId(firstId);
+            localStorage.setItem('currentOrgId', firstId);
+          }
+        }
+      })
       .catch(() => {});
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('currentOrgId') : null;
-    if (stored) setCurrentId(stored);
   }, []);
-
-  useEffect(() => {
-    if (!currentId && orgs.length > 0) setCurrentId(orgs[0].id);
-  }, [orgs, currentId]);
 
   const current = orgs.find((o) => o.id === currentId) || orgs[0];
   const switchOrg = (id: string) => {

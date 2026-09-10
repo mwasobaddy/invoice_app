@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export default function CreateInvoicePage() {
   const router = useRouter()
@@ -55,12 +56,17 @@ export default function CreateInvoicePage() {
       if (!response.ok) {
         const data = await response.json().catch(() => ({}))
         const details = data.details ? JSON.stringify(data.details) : data.error
-        throw new Error(details || 'Failed to create invoice')
+        throw new Error(details || data.error || 'Failed to create invoice')
       }
 
+      toast.success('Invoice created successfully', { description: `${clientName} — $${parseFloat(amount).toFixed(2)}` })
       router.push('/dashboard/invoices')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      const msg = err instanceof Error ? err.message : 'An error occurred'
+      setError(msg)
+      if (msg.includes('Not a member')) toast.error('Workspace error', { description: msg })
+      else if (msg.includes('already exists')) toast.warning(msg)
+      else toast.error('Failed to create invoice', { description: msg })
     } finally {
       setLoading(false)
     }
