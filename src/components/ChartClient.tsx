@@ -22,11 +22,14 @@ export default function ChartClient({ data: initialData }: { data: ChartDataPoin
     setPeriod(p);
     startTransition(async () => {
       try {
-        const next = await getChartData(p);
+        const orgId = typeof window !== "undefined" ? localStorage.getItem("currentOrgId") : null;
+        const next = await getChartData(p, orgId);
         setData(next as ChartDataPoint[]);
       } catch {
         // fallback to fetch if Server Action fails (hobby without DB)
-        const res = await fetch(`/api/dashboard/chart-data?period=${p}`);
+        const orgId = typeof window !== "undefined" ? localStorage.getItem("currentOrgId") : null;
+        const qs = orgId ? `&orgId=${orgId}` : "";
+        const res = await fetch(`/api/dashboard/chart-data?period=${p}${qs}`);
         if (res.ok) setData(await res.json());
       }
     });
