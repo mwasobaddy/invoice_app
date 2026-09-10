@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(password)
 
-    // Create user
+    // Create user + Personal Org (strict personal vs org)
     const user = await prisma.user.create({
       data: {
         email,
@@ -50,6 +50,11 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
       },
     })
+
+    // Create Personal workspace for new user
+    const personalName = name ? `${name.trim().split(' ')[0]}'s Personal` : 'Personal';
+    const personalOrg = await prisma.org.create({ data: { name: personalName } });
+    await prisma.membership.create({ data: { userId: user.id, orgId: personalOrg.id, role: "owner" } });
 
     return NextResponse.json(
       {
@@ -59,6 +64,7 @@ export async function POST(request: NextRequest) {
           email: user.email,
           name: user.name,
         },
+        personalOrgId: personalOrg.id,
       },
       { status: 201 }
     )
