@@ -61,6 +61,14 @@ export default function BudgetsPage() {
   })
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / pageSize)), [total])
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+  const [chartData, setChartData] = useState<Array<{ month: string; amount: number }>>([])
+  const availableYears = useMemo(() => {
+    const years = new Set<number>()
+    items.forEach((b) => years.add(new Date(b.startDate).getFullYear()))
+    years.add(new Date().getFullYear())
+    return Array.from(years).sort((a, b) => b - a)
+  }, [items])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -104,6 +112,24 @@ export default function BudgetsPage() {
 
     fetchList()
   }, [page])
+
+  useEffect(() => {
+    const orgId = typeof window !== 'undefined' ? localStorage.getItem('currentOrgId') : null
+    const qs = orgId ? `&orgId=${orgId}` : ''
+    fetch(`/api/budgets?page=1&limit=100${qs}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const all: BudgetRow[] = Array.isArray(data) ? data : data.items || []
+        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+        const buckets = months.map((m) => ({ month: m, amount: 0 }))
+        all.forEach((b) => {
+          const d = new Date(b.startDate)
+          if (d.getFullYear() === selectedYear) buckets[d.getMonth()].amount += b.limit
+        })
+        setChartData(buckets)
+      })
+      .catch(() => {})
+  }, [selectedYear, items.length])
 
   const startEdit = (budget: BudgetRow) => {
     setEditingId(budget.id)
@@ -201,33 +227,6 @@ export default function BudgetsPage() {
   }
 
   const spentPercentage = stats.totalBudget > 0 ? (stats.totalSpent / stats.totalBudget) * 100 : 0
-
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
-  const [chartData, setChartData] = useState<Array<{ month: string; amount: number }>>([])
-  const availableYears = useMemo(() => {
-    const years = new Set<number>()
-    items.forEach((b) => years.add(new Date(b.startDate).getFullYear()))
-    years.add(new Date().getFullYear())
-    return Array.from(years).sort((a, b) => b - a)
-  }, [items])
-
-  useEffect(() => {
-    const orgId = typeof window !== 'undefined' ? localStorage.getItem('currentOrgId') : null
-    const qs = orgId ? `&orgId=${orgId}` : ''
-    fetch(`/api/budgets?page=1&limit=100${qs}`)
-      .then((r) => r.json())
-      .then((data) => {
-        const all: BudgetRow[] = Array.isArray(data) ? data : data.items || []
-        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-        const buckets = months.map((m) => ({ month: m, amount: 0 }))
-        all.forEach((b) => {
-          const d = new Date(b.startDate)
-          if (d.getFullYear() === selectedYear) buckets[d.getMonth()].amount += b.limit
-        })
-        setChartData(buckets)
-      })
-      .catch(() => {})
-  }, [selectedYear, items.length])
 
   return (
     <div className="space-y-8">
