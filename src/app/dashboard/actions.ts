@@ -4,18 +4,23 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // Server Action for ChartClient period toggle — replaces client fetch('/api/dashboard/chart-data')
-export async function getChartData(period: "monthly" | "yearly") {
+export async function getChartData(period: "monthly" | "yearly", orgId?: string | null) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   const userId = session.user.id;
+  if (orgId) {
+    const mem = await prisma.membership.findUnique({ where: { userId_orgId: { userId, orgId } } as never });
+    if (!mem) throw new Error("Not a member");
+  }
   const since = new Date();
   if (period === "yearly") since.setFullYear(since.getFullYear() - 5);
   else since.setMonth(since.getMonth() - 12);
 
+  const orgFilter = orgId ? { orgId } as never : undefined;
   const [invoices, expenses, budgets] = await Promise.all([
-    prisma.invoice.findMany({ where: { userId, issueDate: { gte: since }, deletedAt: null } as never, include: { payments: true } }),
-    prisma.expense.findMany({ where: { userId, date: { gte: since }, deletedAt: null } as never }),
-    prisma.budget.findMany({ where: { userId, startDate: { gte: since }, deletedAt: null } as never }),
+    prisma.invoice.findMany({ where: { userId, issueDate: { gte: since }, deletedAt: null, ...(orgFilter ? { orgId } : {}) } as never, include: { payments: true } }),
+    prisma.expense.findMany({ where: { userId, date: { gte: since }, deletedAt: null, ...(orgFilter ? { orgId } : {}) } as never }),
+    prisma.budget.findMany({ where: { userId, startDate: { gte: since }, deletedAt: null, ...(orgFilter ? { orgId } : {}) } as never }),
   ]);
 
   const map = new Map<string, { period: string; invoices: number; paidInvoices: number; pendingInvoices: number; expenses: number; budget: number }>();
