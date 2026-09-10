@@ -1,10 +1,9 @@
 import NextAuth, { CredentialsSignin } from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import CredentialsProvider from "next-auth/providers/credentials"
-import GithubProvider from "next-auth/providers/github"
-import GoogleProvider from "next-auth/providers/google"
 import { prisma } from "@/lib/prisma"
 import { compare } from "bcryptjs"
+import { authConfig } from "@/auth.config"
 
 if (process.env.NEXTAUTH_SECRET && process.env.NEXTAUTH_SECRET.length < 32) {
   throw new Error("NEXTAUTH_SECRET must be at least 32 characters — generate with: openssl rand -base64 32");
@@ -15,14 +14,9 @@ class OAuthNoPasswordError extends CredentialsSignin {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  // The generated Prisma client type differs slightly from @prisma/client's type expected by PrismaAdapter.
+  ...authConfig,
   adapter: PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]),
-  pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
-  },
   providers: [
-    // Credentials provider for email/password authentication
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -66,17 +60,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       },
     }),
-
-    // OAuth providers — support both naming conventions
-    GithubProvider({
-      clientId: process.env.GITHUB_ID || process.env.AUTH_GITHUB_ID || "",
-      clientSecret: process.env.GITHUB_SECRET || process.env.AUTH_GITHUB_SECRET || "",
-    }),
-
-    GoogleProvider({
-      clientId: process.env.GOOGLE_ID || process.env.AUTH_GOOGLE_ID || "",
-      clientSecret: process.env.GOOGLE_SECRET || process.env.AUTH_GOOGLE_SECRET || "",
-    }),
+    // Re-use GitHub/Google from authConfig (edge) to keep single source
+    ...authConfig.providers,
   ],
 
   callbacks: {
