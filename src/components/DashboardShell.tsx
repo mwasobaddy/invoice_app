@@ -8,30 +8,9 @@ import OrgSwitcher from '@/components/OrgSwitcher'
 
 const navItems = [
   { label: 'Overview', href: '/dashboard' },
-  {
-    label: 'Invoices',
-    href: '/dashboard/invoices',
-    submenu: [
-      { label: 'Overview', href: '/dashboard/invoices' },
-      { label: 'Create Invoice', href: '/dashboard/invoices/create' },
-    ],
-  },
-  {
-    label: 'Budgets',
-    href: '/dashboard/budgets',
-    submenu: [
-      { label: 'Overview', href: '/dashboard/budgets' },
-      { label: 'Create Budget', href: '/dashboard/budgets/create' },
-    ],
-  },
-  {
-    label: 'Expenses',
-    href: '/dashboard/expenses',
-    submenu: [
-      { label: 'Overview', href: '/dashboard/expenses' },
-      { label: 'Create Expense', href: '/dashboard/expenses/create' },
-    ],
-  },
+  { label: 'Invoices', href: '/dashboard/invoices' },
+  { label: 'Budgets', href: '/dashboard/budgets' },
+  { label: 'Expenses', href: '/dashboard/expenses' },
   { label: 'Settings', href: '/dashboard/settings' },
 ]
 
@@ -39,7 +18,34 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const { data: session } = useSession()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [workspaceSlug, setWorkspaceSlug] = useState<string | null>(null)
+
+  useEffect(() => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('currentOrgId') : null
+    if (stored) {
+      fetch('/api/orgs')
+        .then((r) => r.json())
+        .then((orgs: Array<{ id: string; slug: string }>) => {
+          const org = orgs.find((o) => o.id === stored)
+          if (org?.slug) setWorkspaceSlug(org.slug)
+        })
+        .catch(() => {})
+    }
+    // Also check URL for workspace slug
+    const match = pathname.match(/^\/([^/]+)\/(dashboard|invoices|budgets|expenses|settings)/)
+    if (match && match[1] !== 'dashboard' && match[1] !== 'api' && match[1] !== 'auth') {
+      setWorkspaceSlug(match[1])
+    }
+  }, [pathname])
+
+  const getHref = (path: string) => {
+    if (workspaceSlug) {
+      // Replace /dashboard with /[workspace]/dashboard
+      if (path === '/dashboard') return `/${workspaceSlug}/dashboard`
+      if (path.startsWith('/dashboard/')) return path.replace('/dashboard', `/${workspaceSlug}`)
+    }
+    return path
+  }
 
   const userLabel = useMemo(() => {
     return session?.user?.name || session?.user?.email || 'Signed in'
@@ -68,65 +74,19 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           <nav className="flex-1 px-4" aria-label="Dashboard">
             <div className="space-y-2">
               {navItems.map((item) => {
-                const isActive = pathname === item.href
-                const hasSubmenu = 'submenu' in item && item.submenu
-                const isDropdownOpen = openDropdown === item.label
-                const isSubmenuActive = hasSubmenu && item.submenu.some((sub) => pathname === sub.href)
-
+                const href = getHref(item.href)
+                const isActive = pathname === href || pathname === item.href
                 return (
-                  <div key={item.label}>
-                    {hasSubmenu ? (
-                      <button
-                        onClick={() => setOpenDropdown(isDropdownOpen ? null : item.label)}
-                        className={`w-full flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
-                          isDropdownOpen || isSubmenuActive
-                            ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20'
-                            : 'text-slate-700 hover:bg-slate-100'
-                        }`}
-                      >
-                        <span>{item.label}</span>
-                        <span
-                          className={`h-2 w-2 rounded-full transition-transform duration-200 ${
-                            isDropdownOpen || isSubmenuActive ? 'bg-lime-300' : 'bg-slate-300'
-                          } ${isDropdownOpen ? 'rotate-180' : ''}`}
-                        />
-                      </button>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
-                          isActive
-                            ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20'
-                            : 'text-slate-700 hover:bg-slate-100'
-                        }`}
-                      >
-                        <span>{item.label}</span>
-                        <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-lime-300' : 'bg-slate-300'}`} />
-                      </Link>
-                    )}
-
-                    {hasSubmenu && (isDropdownOpen || isSubmenuActive) && (
-                      <div className="mt-1 space-y-1 pl-2">
-                        {item.submenu.map((subitem) => {
-                          const isSubActive = pathname === subitem.href
-                          return (
-                            <Link
-                              key={subitem.href}
-                              href={subitem.href}
-                              className={`flex items-center rounded-lg px-4 py-2 text-sm transition-all duration-200 ${
-                                isSubActive
-                                  ? 'bg-slate-800 text-white font-semibold'
-                                  : 'text-slate-600 hover:bg-slate-100'
-                              }`}
-                            >
-                              <span className="text-xl">›</span>
-                              <span className="ml-2">{subitem.label}</span>
-                            </Link>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
+                  <Link
+                    key={item.label}
+                    href={href}
+                    className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                      isActive ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/20' : 'text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-lime-300' : 'bg-slate-300'}`} />
+                  </Link>
                 )
               })}
             </div>
@@ -188,17 +148,20 @@ export default function DashboardShell({ children }: { children: React.ReactNode
             </div>
 
             <div className="mt-6 grid gap-3">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-between rounded-2xl border border-slate-200/80 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm"
-                >
-                  <span>{item.label}</span>
-                  <span className="text-xs text-slate-500">Go</span>
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const href = getHref(item.href)
+                return (
+                  <Link
+                    key={item.label}
+                    href={href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-between rounded-2xl border border-slate-200/80 px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm"
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-xs text-slate-500">Go</span>
+                  </Link>
+                )
+              })}
             </div>
 
             <div className="mt-6 rounded-2xl bg-slate-900 px-4 py-4 text-white">

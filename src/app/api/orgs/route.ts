@@ -26,7 +26,14 @@ export async function POST(request: NextRequest) {
     const raw = await request.json().catch(() => ({}));
     const parsed = OrgSchema.safeParse(raw);
     if (!parsed.success) return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
-    const org = await prisma.org.create({ data: { name: parsed.data.name } });
+    function slugify(name: string) { return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+    let slug = slugify(parsed.data.name);
+    let base = slug;
+    let i = 1;
+    while (await prisma.org.findUnique({ where: { slug } })) {
+      slug = `${base}-${i++}`;
+    }
+    const org = await prisma.org.create({ data: { name: parsed.data.name, slug } });
     await prisma.membership.create({ data: { userId: user.id!, orgId: org.id, role: "owner" } });
     const { writeAuditLog } = await import("@/lib/audit");
     await writeAuditLog({ userId: user.id!, action: "create", entity: "Org", entityId: org.id, diff: parsed.data as Record<string, unknown>, ip: request.headers.get("x-forwarded-for") });

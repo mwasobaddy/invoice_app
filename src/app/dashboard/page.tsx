@@ -32,6 +32,9 @@ async function getInitialChartData(userId: string) {
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
+  // Redirect to workspace-specific URL: /[slug]/dashboard
+  const membership = await prisma.membership.findFirst({ where: { userId: session.user.id }, include: { org: true }, orderBy: { createdAt: 'asc' } });
+  if (membership?.org?.slug) redirect(`/${membership.org.slug}/dashboard`);
   const initialData = await getInitialChartData(session.user.id);
 
   return (

@@ -211,8 +211,15 @@ export default function InvoicesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-900"></div>
+      <div className="space-y-6 animate-pulse">
+        <div className="h-8 w-48 rounded bg-slate-200" />
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-32 rounded-2xl bg-white shadow" />
+          ))}
+        </div>
+        <div className="h-64 rounded-2xl bg-white shadow" />
+        <div className="h-96 rounded-2xl bg-white shadow" />
       </div>
     )
   }

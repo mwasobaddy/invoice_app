@@ -1,15 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 
 type Org = { id: string; name: string };
 
 export default function OrgSwitcher({ orgs: initialOrgs = [] as Org[] }) {
-  const [orgs, setOrgs] = useState<Org[]>(initialOrgs);
+  const [orgs, setOrgs] = useState<(Org & { slug?: string })[]>(initialOrgs as (Org & { slug?: string })[]);
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [creating, setCreating] = useState(false);
   const [currentId, setCurrentId] = useState<string | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     fetch('/api/orgs')
@@ -31,14 +34,23 @@ export default function OrgSwitcher({ orgs: initialOrgs = [] as Org[] }) {
       .catch(() => {});
   }, []);
 
-  const current = orgs.find((o) => o.id === currentId) || orgs[0];
+  const current = (orgs as (Org & { slug?: string })[]).find((o) => o.id === currentId) || orgs[0] as (Org & { slug?: string }) | undefined;
   const switchOrg = (id: string) => {
+    const org = (orgs as (Org & { slug?: string })[]).find((o) => o.id === id);
     setCurrentId(id);
     localStorage.setItem('currentOrgId', id);
+    if (org?.slug) localStorage.setItem('currentWorkspaceSlug', org.slug);
     window.dispatchEvent(new CustomEvent('orgChange', { detail: id }));
     setOpen(false);
-    // Force reload to refetch data with new orgId filter (strict)
-    window.location.reload();
+    // Navigate to workspace-specific URL: /[slug]/dashboard
+    if (org?.slug) {
+      const currentPath = pathname || '';
+      const newPath = currentPath.replace(/^\/[^/]+\/(dashboard|invoices|budgets|expenses|settings)/, `/${org.slug}/$1`).replace(/^\/dashboard/, `/${org.slug}/dashboard`);
+      if (newPath !== currentPath && newPath.startsWith(`/${org.slug}`)) router.push(newPath);
+      else router.push(`/${org.slug}/dashboard`);
+    } else {
+      window.location.reload();
+    }
   };
 
   const createOrg = async () => {
