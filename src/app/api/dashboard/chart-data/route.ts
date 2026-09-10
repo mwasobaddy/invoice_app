@@ -15,6 +15,13 @@ export async function GET(request: NextRequest) {
     }
     const userId = user.id;
     const period = request.nextUrl.searchParams.get('period') || 'monthly';
+    const orgId = request.nextUrl.searchParams.get('orgId');
+    // Strict org filter
+    const orgFilter = orgId ? { orgId } as never : undefined;
+    if (orgId) {
+      const mem = await prisma.membership.findUnique({ where: { userId_orgId: { userId, orgId } } as never });
+      if (!mem) return NextResponse.json({ error: 'Not a member' }, { status: 403 });
+    }
 
     // limit range to avoid OOM on large tables — last 12 months or 5 years
     const since = new Date();
@@ -23,16 +30,16 @@ export async function GET(request: NextRequest) {
 
     const [invoices, expenses, budgets] = await Promise.all([
       prisma.invoice.findMany({
-        where: { userId, issueDate: { gte: since }, deletedAt: null } as never,
+        where: { userId, issueDate: { gte: since }, deletedAt: null, ...(orgFilter ? { orgId } : {}) } as never,
         include: { payments: true },
         orderBy: { issueDate: 'asc' },
       }),
       prisma.expense.findMany({
-        where: { userId, date: { gte: since }, deletedAt: null } as never,
+        where: { userId, date: { gte: since }, deletedAt: null, ...(orgFilter ? { orgId } : {}) } as never,
         orderBy: { date: 'asc' },
       }),
       prisma.budget.findMany({
-        where: { userId, startDate: { gte: since }, deletedAt: null } as never,
+        where: { userId, startDate: { gte: since }, deletedAt: null, ...(orgFilter ? { orgId } : {}) } as never,
         orderBy: { startDate: 'asc' },
       }),
     ]);
