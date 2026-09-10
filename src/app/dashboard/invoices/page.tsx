@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface InvoiceStats {
   totalAmount: number
@@ -289,21 +290,16 @@ export default function InvoicesPage() {
             {availableYears.map((y) => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
-        <div className="mt-6 h-64 flex items-end gap-2">
-          {chartData.map((d) => {
-            const max = Math.max(1, ...chartData.map((x) => x.amount))
-            const h = (d.amount / max) * 100
-            return (
-              <div key={d.month} className="flex-1 flex flex-col items-center gap-2">
-                <div className="w-full flex justify-center" style={{ height: '180px' }}>
-                  <div className="w-full max-w-10 rounded-t-xl bg-gradient-to-t from-slate-900 to-slate-700 flex items-end justify-center pb-2" style={{ height: `${h}%`, minHeight: d.amount ? '24px' : '4px' }}>
-                    {d.amount > 0 && <span className="text-[10px] font-bold text-white">{formatCurrency(d.amount)}</span>}
-                  </div>
-                </div>
-                <span className="text-xs font-medium text-slate-500">{d.month}</span>
-              </div>
-            )
-          })}
+        <div className="mt-6 h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="month" stroke="#64748b" style={{ fontSize: '12px' }} />
+              <YAxis stroke="#64748b" style={{ fontSize: '12px' }} tickFormatter={(v) => `$${v}`} />
+              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }} formatter={(v) => formatCurrency(Number(v))} />
+              <Line type="monotone" dataKey="amount" stroke="#0f172a" strokeWidth={2.5} dot={{ fill: '#0f172a', r: 4 }} activeDot={{ r: 6 }} name="Invoices" />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
