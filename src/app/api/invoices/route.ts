@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * pageSize;
     const q = request.nextUrl.searchParams.get('q')?.trim();
     const status = request.nextUrl.searchParams.get('status');
+    const orgId = request.nextUrl.searchParams.get('orgId');
     const sort = request.nextUrl.searchParams.get('sort') || 'createdAt:desc';
     const [sortField, sortDir] = sort.split(':');
     const allowedSort = ['createdAt', 'dueDate', 'amount', 'invoiceNo'];
@@ -30,6 +31,13 @@ export async function GET(request: NextRequest) {
     orderBy[allowedSort.includes(sortField) ? sortField : 'createdAt'] = sortDir === 'asc' ? 'asc' : 'desc';
 
     const where: Record<string, unknown> = { userId };
+    // Strict org filter: if orgId provided, filter by it (Personal vs Malimanager)
+    if (orgId) {
+      // Validate membership
+      const mem = await prisma.membership.findUnique({ where: { userId_orgId: { userId, orgId } } as never });
+      if (!mem) return NextResponse.json({ error: 'Not a member of this workspace' }, { status: 403 });
+      (where as Record<string, unknown>).orgId = orgId;
+    }
     if (q) {
       (where as Record<string, unknown>).OR = [
         { invoiceNo: { contains: q, mode: 'insensitive' } },
@@ -99,6 +107,12 @@ export async function POST(request: NextRequest) {
     const computedAmount = calculateInvoiceTotal(body.items);
     const amount = body.amount ?? computedAmount;
     const invoiceNo = body.invoiceNo?.trim() || generateInvoiceNumber();
+    // orgId handling: prefer body.orgId, fallback to header/query, validate membership
+    const orgId = (raw as { orgId?: string }).orgId || request.headers.get('x-org-id') || null;
+    if (orgId) {
+      const mem = await prisma.membership.findUnique({ where: { userId_orgId: { userId, orgId } } as never });
+      if (!mem) return NextResponse.json({ error: 'Not a member of this workspace' }, { status: 403 });
+    }
 
     // Unique check per user (schema has @@unique([userId, invoiceNo]))
     const exists = await prisma.invoice.findUnique({ where: { userId_invoiceNo: { userId, invoiceNo } } as never });
@@ -109,6 +123,7 @@ export async function POST(request: NextRequest) {
     const invoice = await prisma.invoice.create({
       data: {
         userId,
+        orgId: orgId || null,
         invoiceNo,
         clientName: body.clientName,
         clientEmail: body.clientEmail || null,
