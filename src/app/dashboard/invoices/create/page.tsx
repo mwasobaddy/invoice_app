@@ -23,23 +23,39 @@ export default function CreateInvoicePage() {
     setError(null)
 
     try {
+      const orgId = typeof window !== 'undefined' ? localStorage.getItem('currentOrgId') : null
+      const amt = parseFloat(amount)
       const response = await fetch('/api/invoices', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(orgId ? { 'x-org-id': orgId } : {}) },
         body: JSON.stringify({
-          invoiceNo,
+          invoiceNo: invoiceNo || undefined,
           clientName,
           clientEmail,
           clientPhone,
-          amount: parseFloat(amount),
+          amount: amt,
+          currency: 'USD',
+          status: 'draft',
           description,
+          notes: '',
           issueDate: new Date(issueDate),
           dueDate: new Date(dueDate),
+          orgId: orgId || undefined,
+          items: [
+            {
+              description: description || `Services for ${clientName}`,
+              quantity: 1,
+              rate: amt,
+              amount: amt,
+            },
+          ],
         }),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create invoice')
+        const data = await response.json().catch(() => ({}))
+        const details = data.details ? JSON.stringify(data.details) : data.error
+        throw new Error(details || 'Failed to create invoice')
       }
 
       router.push('/dashboard/invoices')

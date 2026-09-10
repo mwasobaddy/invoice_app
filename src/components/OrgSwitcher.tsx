@@ -95,19 +95,19 @@ export default function OrgSwitcher({ orgs: initialOrgs = [] as Org[] }) {
 
           <div className="mt-3 border-t border-slate-100 pt-3">
             <p className="px-2 text-xs font-semibold text-slate-500">Create workspace</p>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2 flex flex-col gap-2">
               <input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="e.g., Malimanager"
-                className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
               />
               <button
                 onClick={createOrg}
                 disabled={creating || !newName.trim()}
-                className="rounded-xl bg-lime-300 px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-900 shadow hover:bg-lime-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-xl bg-lime-300 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-slate-900 shadow hover:bg-lime-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {creating ? '…' : 'Create'}
+                {creating ? 'Creating…' : 'Create workspace'}
               </button>
             </div>
             <p className="mt-2 px-2 text-xs leading-4 text-slate-500">Strict filter: <span className="font-medium text-slate-700">Personal</span> shows only Personal data, <span className="font-medium text-slate-700">Malimanager</span> shows only Malimanager data.</p>

@@ -16,7 +16,16 @@ interface ChartDataPoint {
 export default function ChartClient({ data: initialData }: { data: ChartDataPoint[] }) {
   const [data, setData] = useState(initialData);
   const [period, setPeriod] = useState<"monthly" | "yearly">("monthly");
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [isPending, startTransition] = useTransition();
+
+  const availableYears = Array.from(new Set(initialData.map((d) => {
+    const m = d.period.match(/(\d{4})$/);
+    return m ? parseInt(m[1]) : new Date().getFullYear();
+  }).filter(Boolean))).sort((a,b)=>b-a).slice(0,5);
+  if (availableYears.length===0) availableYears.push(new Date().getFullYear());
+
+  const filteredData = period==="yearly" ? data : data.filter((d) => d.period.includes(String(selectedYear)) || d.period===String(selectedYear));
 
   const handlePeriod = (p: "monthly" | "yearly") => {
     setPeriod(p);
@@ -26,7 +35,6 @@ export default function ChartClient({ data: initialData }: { data: ChartDataPoin
         const next = await getChartData(p, orgId);
         setData(next as ChartDataPoint[]);
       } catch {
-        // fallback to fetch if Server Action fails (hobby without DB)
         const orgId = typeof window !== "undefined" ? localStorage.getItem("currentOrgId") : null;
         const qs = orgId ? `&orgId=${orgId}` : "";
         const res = await fetch(`/api/dashboard/chart-data?period=${p}${qs}`);
@@ -35,19 +43,23 @@ export default function ChartClient({ data: initialData }: { data: ChartDataPoin
     });
   };
 
+  const displayData = period==="monthly" && filteredData.length ? filteredData : data;
   if (!data || data.length === 0) {
     return <div className="flex h-96 items-center justify-center text-slate-600"><p>No data available.</p></div>;
   }
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 justify-end">
+      <div className="flex flex-wrap gap-2 justify-end items-center">
+        <select value={selectedYear} onChange={(e)=>setSelectedYear(parseInt(e.target.value))} className={`rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ${period==="yearly" ? "opacity-50 pointer-events-none":""}`}>
+          {availableYears.map((y)=><option key={y} value={y}>{y}</option>)}
+        </select>
         <button onClick={() => handlePeriod("monthly")} className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${period==="monthly"?"bg-slate-900 text-white":"bg-slate-100 text-slate-700"}`}>Monthly</button>
         <button onClick={() => handlePeriod("yearly")} className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${period==="yearly"?"bg-slate-900 text-white":"bg-slate-100 text-slate-700"}`}>Yearly</button>
         {isPending && <span className="text-xs text-slate-400">Updating…</span>}
       </div>
       <div className="h-96 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+          <LineChart data={displayData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis dataKey="period" stroke="#64748b" style={{ fontSize: '12px' }} />
             <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />

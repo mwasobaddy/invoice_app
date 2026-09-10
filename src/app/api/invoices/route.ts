@@ -98,6 +98,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
     }
 
+    // Handle missing items: if frontend sends only amount/description, create a default line item
+    if (!raw.items || !Array.isArray(raw.items) || raw.items.length === 0) {
+      if (raw.amount && raw.clientName) {
+        raw.items = [
+          {
+            description: raw.description || `Services for ${raw.clientName}`,
+            quantity: 1,
+            rate: parseFloat(String(raw.amount)),
+            amount: parseFloat(String(raw.amount)),
+          },
+        ];
+      }
+    }
     const parsed = CreateInvoiceSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json({ error: 'Validation failed', details: formatZodError(parsed.error) }, { status: 400 });

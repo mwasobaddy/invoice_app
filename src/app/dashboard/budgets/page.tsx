@@ -202,14 +202,44 @@ export default function BudgetsPage() {
 
   const spentPercentage = stats.totalBudget > 0 ? (stats.totalSpent / stats.totalBudget) * 100 : 0
 
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
+  const [chartData, setChartData] = useState<Array<{ month: string; amount: number }>>([])
+  const availableYears = useMemo(() => {
+    const years = new Set<number>()
+    items.forEach((b) => years.add(new Date(b.startDate).getFullYear()))
+    years.add(new Date().getFullYear())
+    return Array.from(years).sort((a, b) => b - a)
+  }, [items])
+
+  useEffect(() => {
+    const orgId = typeof window !== 'undefined' ? localStorage.getItem('currentOrgId') : null
+    const qs = orgId ? `&orgId=${orgId}` : ''
+    fetch(`/api/budgets?page=1&limit=100${qs}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const all: BudgetRow[] = Array.isArray(data) ? data : data.items || []
+        const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+        const buckets = months.map((m) => ({ month: m, amount: 0 }))
+        all.forEach((b) => {
+          const d = new Date(b.startDate)
+          if (d.getFullYear() === selectedYear) buckets[d.getMonth()].amount += b.limit
+        })
+        setChartData(buckets)
+      })
+      .catch(() => {})
+  }, [selectedYear, items.length])
+
   return (
     <div className="space-y-8">
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Your Budget Workspace</p>
-        <h1 className="text-3xl font-semibold text-slate-900">Workspace</h1>
-        <p className="text-sm text-slate-600">
-          Manage and track all your budgets in one place
-        </p>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Your Budget Workspace</p>
+          <h1 className="text-3xl font-semibold text-slate-900">Workspace</h1>
+          <p className="text-sm text-slate-600">Manage and track all your budgets in one place</p>
+        </div>
+        <a href="/dashboard/budgets/create" className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-slate-800">
+          + Create Budget
+        </a>
       </header>
 
       <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
@@ -258,6 +288,34 @@ export default function BudgetsPage() {
               <span className="text-2xl font-semibold text-red-600">{stats.budgetsOverspent}</span>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200/70 bg-white p-6 shadow-md">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Monthly Budgets</h2>
+            <p className="text-sm text-slate-500">Months vs budget limit for selected year</p>
+          </div>
+          <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700">
+            {availableYears.map((y) => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </div>
+        <div className="mt-6 h-64 flex items-end gap-2">
+          {chartData.map((d) => {
+            const max = Math.max(1, ...chartData.map((x) => x.amount))
+            const h = (d.amount / max) * 100
+            return (
+              <div key={d.month} className="flex-1 flex flex-col items-center gap-2">
+                <div className="w-full flex justify-center" style={{ height: '180px' }}>
+                  <div className="w-full max-w-10 rounded-t-xl bg-gradient-to-t from-emerald-700 to-emerald-500 flex items-end justify-center pb-2" style={{ height: `${h}%`, minHeight: d.amount ? '24px' : '4px' }}>
+                    {d.amount > 0 && <span className="text-[10px] font-bold text-white">{formatCurrency(d.amount)}</span>}
+                  </div>
+                </div>
+                <span className="text-xs font-medium text-slate-500">{d.month}</span>
+              </div>
+            )
+          })}
         </div>
       </div>
 
