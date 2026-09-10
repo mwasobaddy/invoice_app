@@ -21,7 +21,13 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * pageSize;
     const q = request.nextUrl.searchParams.get('q')?.trim();
     const category = request.nextUrl.searchParams.get('category');
+    const orgId = request.nextUrl.searchParams.get('orgId');
     const where: Record<string, unknown> = { userId };
+    if (orgId) {
+      const mem = await prisma.membership.findUnique({ where: { userId_orgId: { userId, orgId } } as never });
+      if (!mem) return NextResponse.json({ error: 'Not a member' }, { status: 403 });
+      (where as Record<string, unknown>).orgId = orgId;
+    }
     if (q) (where as Record<string, unknown>).OR = [{ description: { contains: q, mode: 'insensitive' } }, { category: { contains: q, mode: 'insensitive' } }];
     if (category) (where as Record<string, unknown>).category = category;
     const [items, total] = await Promise.all([
@@ -58,9 +64,15 @@ export async function POST(request: NextRequest) {
     }
     const body = parsed.data;
 
+    const orgId = (raw as { orgId?: string }).orgId || request.headers.get('x-org-id') || null;
+    if (orgId) {
+      const mem = await prisma.membership.findUnique({ where: { userId_orgId: { userId, orgId } } as never });
+      if (!mem) return NextResponse.json({ error: 'Not a member' }, { status: 403 });
+    }
     const expense = await prisma.expense.create({
       data: {
         userId,
+        orgId: orgId || null,
         budgetId: body.budgetId || null,
         description: body.description,
         amount: body.amount,
