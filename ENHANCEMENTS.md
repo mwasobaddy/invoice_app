@@ -66,7 +66,25 @@ After re-verifying `00:05` file, **no new gaps found** — not even P2. Previous
 
 ---
 
-## 5. Verification
+## 5. Personal Workspaces + Strict Filter + OrgSwitcher Redesign — Implemented 2026-09-10
+
+**User asked:** Switcher UI not good + can't switch, create Personal on user creation (not org), user can create org and switch Personal ↔ Org, strict filter.
+
+**What was done (kept history, not deleted):**
+- **Personal on signup** `src/app/api/auth/register/route.ts:45` `prisma.org.create({name: "${name}'s Personal"})` + `membership owner` + return `personalOrgId`; `src/lib/auth.ts:115` `events.signIn` ensures every OAuth/new user with 0 memberships gets Personal org
+- **Existing kelvin** `scripts/create-personal.ts:1` already created `Kelvin's Personal` `cmtv6rhy10000kdmhrt2q671l` as owner — now user has **2 orgs**: `Malimanager` + `Personal` (both owner)
+- **Strict filter** `src/app/api/invoices/route.ts:24` + `budgets/route.ts:22` + `expenses/route.ts:22` + `chart-data/route.ts:16` + `src/app/dashboard/actions.ts:8` — `GET ?orgId` validates `membership` then `where orgId = orgId`, `POST` stores `orgId` from `body.orgId`/`x-org-id` with membership check; `Personal` shows only `orgId=PersonalId`, `Malimanager` shows only `orgId=MalimanagerId`
+- **OrgSwitcher redesign** `src/components/OrgSwitcher.tsx:1` — `slate-900` header with `lime-300` dots, **dark slate button** `bg-white` `text-slate-900` `text-slate-500` (fixed light-on-light), `rounded-2xl` `shadow-xl`, active `bg-slate-900 text-white` + checkmark `bg-lime-300`, `Create workspace` `bg-lime-300` button, `strict filter` hint, mounted in **desktop sidebar** `DashboardShell.tsx:60` + **mobile drawer** `DashboardShell.tsx:166` both
+
+**How to use now:**
+- **Signup:** New user → `POST /api/auth/register` auto-creates `Personal` org → `OrgSwitcher` shows `Personal` and later `Malimanager` after you `Create`
+- **Switch:** Click `OrgSwitcher` → pick `Personal` vs `Malimanager` → `localStorage.setItem('currentOrgId', id)` + `window.dispatchEvent('orgChange')` + `window.location.reload()` → all `GET /api/invoices?orgId=...` etc. strictly filtered
+
+**Status:** All requested **DONE** — Personal vs Org strict, UI slate/lime with dark text on white, switch works via `localStorage` + reload.
+
+---
+
+## 6. Verification
 
 - `npm run build` ✓ 33 routes + `manifest.webmanifest` + `sw.js`
 - `prisma generate` ✓
