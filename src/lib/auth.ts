@@ -114,7 +114,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   events: {
     async signIn({ user }) {
-      // structured log placeholder — replace with pino/sentry when added
+      // Ensure every user has a Personal workspace (strict personal vs org)
+      if (user?.email) {
+        const dbUser = await prisma.user.findUnique({ where: { email: user.email }, include: { memberships: true } });
+        if (dbUser && dbUser.memberships.length === 0) {
+          const personalName = dbUser.name ? `${dbUser.name.trim().split(' ')[0]}'s Personal` : 'Personal';
+          const org = await prisma.org.create({ data: { name: personalName } });
+          await prisma.membership.create({ data: { userId: dbUser.id, orgId: org.id, role: "owner" } });
+        }
+      }
     },
     async signOut(params) {
       // noop — handled via audit log if needed
