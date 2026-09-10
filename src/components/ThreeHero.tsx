@@ -168,7 +168,7 @@ export default function ThreeHero() {
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 -z-10 opacity-60"
+      className="absolute inset-0 -z-10 opacity-90"
       aria-hidden
       style={{ pointerEvents: 'none' }}
     />

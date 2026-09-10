@@ -46,7 +46,7 @@ export default async function HomePage() {
 
       {/* Hero */}
       <main>
-        <section className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16 overflow-hidden rounded-[32px] bg-white/40">
+        <section className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16 overflow-hidden rounded-[32px] bg-gradient-to-br from-slate-50 via-white to-lime-50/30 border border-slate-200/50">
           <ThreeHero />
           <div className="relative grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
