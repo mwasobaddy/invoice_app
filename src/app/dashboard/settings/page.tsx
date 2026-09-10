@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import SettingsForm from "@/components/SettingsForm";
+import AiKeyForm from "@/components/AiKeyForm";
 
 export const metadata = {
   title: "Account Settings - Invoice Manager",
@@ -15,10 +16,10 @@ export default async function SettingsPage() {
     redirect("/auth/signin");
   }
 
-  // Fetch user with linked accounts
+  // Fetch user with linked accounts + memberships
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    include: { accounts: true },
+    include: { accounts: true, memberships: { include: { org: true } } },
   });
 
   if (!user) {
@@ -102,10 +103,31 @@ export default async function SettingsPage() {
         </div>
 
         {/* Password Section */}
-        <div>
+        <div className="border-b pb-6 mb-6">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">Password</h3>
           <SettingsForm userEmail={user.email} hasPassword={!!user.password} />
         </div>
+
+        {/* Workspaces */}
+        <div className="border-b pb-6 mb-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">Workspaces</h3>
+          {(user as unknown as { memberships: Array<{ org: { id: string; name: string }; role: string }> }).memberships?.length ? (
+            <div className="space-y-2">
+              {(user as unknown as { memberships: Array<{ org: { id: string; name: string }; role: string }> }).memberships.map((m) => (
+                <div key={m.org.id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
+                  <span className="font-medium text-slate-900">{m.org.name}</span>
+                  <span className="rounded-full bg-lime-100 px-2 py-1 text-xs font-semibold text-lime-800">{m.role}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-600">No workspaces yet — you are in Personal. Create one via <code>POST /api/orgs</code> or invite.</p>
+          )}
+          <p className="mt-2 text-xs text-slate-500">Switch via <b>Organization Switcher</b> in sidebar — Personal vs Malimanager.</p>
+        </div>
+
+        {/* AI BYOK */}
+        <AiKeyForm />
       </div>
     </div>
   );
