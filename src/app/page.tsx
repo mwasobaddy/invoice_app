@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { FileText, Wallet, TrendingUp, ArrowRight, ShieldCheck, Zap, BarChart3 } from "lucide-react";
+import ThreeHero from "@/components/ThreeHero";
 
 export const metadata = {
   title: "Invoice Atlas — Manage invoices, track budgets",
@@ -45,8 +46,9 @@ export default async function HomePage() {
 
       {/* Hero */}
       <main>
-        <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16 overflow-hidden rounded-[32px] bg-white/40">
+          <ThreeHero />
+          <div className="relative grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
               <p className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden />
