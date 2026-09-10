@@ -38,41 +38,41 @@ export default async function DashboardPage() {
   const initialData = await getInitialChartData(session.user.id);
 
   return (
-    <section className="space-y-8">
-      <header className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Your workspace</p>
-        <h1 className="text-3xl font-semibold text-slate-900">Overview</h1>
-        <p className="text-sm text-slate-600">Keep tabs on invoices, budgets, and spending — server-rendered with revalidate.</p>
+    <section className="space-y-10">
+      <header className="space-y-3">
+        <p className="font-ui text-[11px] font-semibold uppercase tracking-[0.25em] text-slate-400">Your workspace</p>
+        <h1 className="font-display text-display text-slate-900">Overview</h1>
+        <p className="font-ui max-w-2xl text-sm leading-6 text-slate-600">Keep tabs on invoices, budgets, and spending — server-rendered with revalidate.</p>
       </header>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         <Link href="/dashboard/invoices" className="group">
-          <div className="rounded-2xl bg-white p-6 shadow-md shadow-slate-200/60 transition-all hover:shadow-lg">
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">Invoices</h3>
-            <p className="text-slate-600 text-sm">Manage your invoices and track payments.</p>
-            <div className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-2 text-center text-sm font-semibold text-white">View Invoices</div>
+          <div className="rounded-2xl bg-white p-6 shadow-md shadow-slate-200/60 transition-all hover:shadow-lg hover:-translate-y-0.5">
+            <h3 className="font-ui text-base font-semibold text-slate-900 mb-1">Invoices</h3>
+            <p className="font-ui text-sm leading-5 text-slate-600">Manage your invoices and track payments.</p>
+            <div className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-2 text-center font-ui text-sm font-semibold text-white">View Invoices</div>
           </div>
         </Link>
         <Link href="/dashboard/budgets" className="group">
-          <div className="rounded-2xl bg-white p-6 shadow-md shadow-slate-200/60 transition-all hover:shadow-lg">
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">Budgets</h3>
-            <p className="text-slate-600 text-sm">Set spending targets and keep costs aligned.</p>
-            <div className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-2 text-center text-sm font-semibold text-white">View Budgets</div>
+          <div className="rounded-2xl bg-white p-6 shadow-md shadow-slate-200/60 transition-all hover:shadow-lg hover:-translate-y-0.5">
+            <h3 className="font-ui text-base font-semibold text-slate-900 mb-1">Budgets</h3>
+            <p className="font-ui text-sm leading-5 text-slate-600">Set spending targets and keep costs aligned.</p>
+            <div className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-2 text-center font-ui text-sm font-semibold text-white">View Budgets</div>
           </div>
         </Link>
         <Link href="/dashboard/expenses" className="group">
-          <div className="rounded-2xl bg-white p-6 shadow-md shadow-slate-200/60 transition-all hover:shadow-lg">
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">Expenses</h3>
-            <p className="text-slate-600 text-sm">Track and categorize cash flowing out.</p>
-            <div className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-2 text-center text-sm font-semibold text-white">View Expenses</div>
+          <div className="rounded-2xl bg-white p-6 shadow-md shadow-slate-200/60 transition-all hover:shadow-lg hover:-translate-y-0.5">
+            <h3 className="font-ui text-base font-semibold text-slate-900 mb-1">Expenses</h3>
+            <p className="font-ui text-sm leading-5 text-slate-600">Track and categorize cash flowing out.</p>
+            <div className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-2 text-center font-ui text-sm font-semibold text-white">View Expenses</div>
           </div>
         </Link>
       </div>
 
       <div className="rounded-2xl bg-white p-8 shadow-md shadow-slate-200/60">
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-slate-900">Financial Overview</h2>
-          <p className="text-sm text-slate-600 mt-1">Server-rendered initial data + client ChartClient for period toggle</p>
+        <div className="mb-6 space-y-1">
+          <h2 className="font-ui text-h2 text-slate-900">Financial Overview</h2>
+          <p className="font-ui text-sm leading-5 text-slate-500">Server-rendered · tabular figures · <span className="font-data tabular-nums">$ — precise columns</span></p>
         </div>
         <ChartClient data={initialData} />
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-5 text-sm text-slate-600">
