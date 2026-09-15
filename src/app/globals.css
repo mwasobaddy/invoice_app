@@ -44,3 +44,61 @@ body {
 .animate-fade-up {
   animation: fade-up 0.6s ease-out both;
 }
+
+@keyframes scrollcue {
+  0% {
+    transform: translateX(-100%);
+  }
+  60%,
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee 32s linear infinite;
+}
+
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(48px, 32px) scale(1.12);
+  }
+}
+
+@keyframes blob-drift-reverse {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate(-56px, -28px) scale(0.95);
+  }
+}
+
+.animate-blob-slow {
+  animation: blob-drift 14s ease-in-out infinite;
+}
+
+.animate-blob-slow-reverse {
+  animation: blob-drift-reverse 18s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+  .animate-blob-slow,
+  .animate-blob-slow-reverse {
+    animation: none;
+  }
+}
