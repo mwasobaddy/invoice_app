@@ -1,17 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { ArrowLeft, FileText, ShieldCheck, Zap } from 'lucide-react'
+import { Magnetic, Reveal, Tilt } from '@/components/marketing/anim'
 
-export default function SignInPage() {
+function SignInForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const success = searchParams.get('success')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,12 +55,32 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10 sm:px-8">
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-        <div className="rounded-3xl border border-slate-200/70 bg-white p-8 shadow-xl shadow-slate-200/60 sm:p-10">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 px-4 py-10 sm:px-8">
+      {/* ambient brand blobs */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="animate-blob-slow absolute -top-24 -left-24 h-96 w-96 rounded-full bg-lime-200/50 blur-3xl" />
+        <div className="animate-blob-slow-reverse absolute top-1/3 -right-32 h-[28rem] w-[28rem] rounded-full bg-slate-300/40 blur-3xl" />
+      </div>
+
+      <div className="relative mx-auto w-full max-w-6xl">
+        <Reveal y={12}>
+          <Link href="/" className="inline-flex items-center gap-3 rounded-2xl px-2 py-2 text-sm font-semibold text-slate-700 transition hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">
+              <FileText className="h-5 w-5" aria-hidden />
+            </span>
+            Invoice Atlas
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-400">
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Back to home
+            </span>
+          </Link>
+        </Reveal>
+
+        <div className="mt-6 grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+          <Reveal>
+          <div className="rounded-3xl border border-slate-200/70 bg-white p-8 shadow-xl shadow-slate-200/60 sm:p-10">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Invoice Atlas</p>
-            <h2 className="mt-4 text-3xl font-semibold text-slate-900">Sign in to your account</h2>
+            <h1 className="mt-4 text-3xl font-semibold text-slate-900">Sign in to your account</h1>
             <p className="mt-2 text-sm text-slate-600">
               Or{' '}
               <Link href="/auth/signup" className="font-semibold text-slate-900 hover:text-slate-700">
@@ -89,8 +113,13 @@ export default function SignInPage() {
           </div>
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {success && (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4" role="status">
+                <p className="text-sm font-medium text-emerald-700">{success}</p>
+              </div>
+            )}
             {error && (
-              <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4">
+              <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4" role="alert">
                 <p className="text-sm font-medium text-red-700">{error}</p>
               </div>
             )}
@@ -105,6 +134,7 @@ export default function SignInPage() {
                   name="email"
                   type="email"
                   required
+                  autoComplete="email"
                   className="mt-2 w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                   placeholder="email@example.com"
                   value={email}
@@ -121,6 +151,7 @@ export default function SignInPage() {
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
+                    autoComplete="current-password"
                     className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 pr-11 text-sm text-slate-900 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
                     placeholder="Enter your password"
                     value={password}
@@ -150,17 +181,31 @@ export default function SignInPage() {
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/25 transition hover:bg-slate-800 disabled:opacity-60"
-            >
-              {isLoading ? 'Signing in...' : 'Sign in'}
-            </button>
+            <Magnetic strength={5}>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/25 transition hover:bg-slate-800 disabled:opacity-60"
+              >
+                {isLoading ? 'Signing in...' : 'Sign in'}
+              </button>
+            </Magnetic>
           </form>
-        </div>
 
-        <div className="relative hidden min-h-[520px] overflow-hidden rounded-[32px] bg-slate-950 text-white shadow-2xl shadow-slate-900/40 lg:block">
+          <div className="mt-6 flex items-center justify-center gap-5 text-xs text-slate-500">
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-slate-400" aria-hidden /> Secure by design
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <Zap className="h-4 w-4 text-slate-400" aria-hidden /> SSO with Google
+            </span>
+          </div>
+          </div>
+          </Reveal>
+
+          <Reveal delay={0.12} y={36}>
+          <Tilt className="relative hidden min-h-[520px] lg:block">
+          <div className="relative min-h-[520px] overflow-hidden rounded-[32px] bg-slate-950 text-white shadow-2xl shadow-slate-900/40">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,#1e3a8a_0%,transparent_50%),radial-gradient(circle_at_80%_10%,#0f172a_0%,transparent_55%),radial-gradient(circle_at_70%_80%,#1f2937_0%,transparent_50%)]" />
           <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(148,163,184,0.25) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
 
@@ -208,8 +253,25 @@ export default function SignInPage() {
               </div>
             </div>
           </div>
+          </div>
+          </Tilt>
+          </Reveal>
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-50">
+          <p className="text-sm text-slate-500">Loading…</p>
+        </div>
+      }
+    >
+      <SignInForm />
+    </Suspense>
   )
 }
