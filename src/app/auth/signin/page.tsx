@@ -178,6 +178,14 @@ function SignInForm() {
                     )}
                   </button>
                 </div>
+                <div className="flex justify-end">
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-xs font-medium text-slate-500 transition hover:text-slate-900"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
               </div>
             </div>
 
