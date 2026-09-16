@@ -20,6 +20,12 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const [mobileOpen, setMobileOpen] = useState(false)
   const [workspaceSlug, setWorkspaceSlug] = useState<string | null>(null)
 
+  // Derive workspace slug from the current URL during render (no effect needed)
+  const urlSlug = useMemo(() => {
+    const match = pathname.match(/^\/([^/]+)\/(dashboard|invoices|budgets|expenses|settings)/)
+    return match && match[1] !== 'dashboard' && match[1] !== 'api' && match[1] !== 'auth' ? match[1] : null
+  }, [pathname])
+
   useEffect(() => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem('currentOrgId') : null
     if (stored) {
@@ -27,22 +33,19 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         .then((r) => r.json())
         .then((orgs: Array<{ id: string; slug: string }>) => {
           const org = orgs.find((o) => o.id === stored)
-          if (org?.slug) setWorkspaceSlug(org.slug)
+          if (org?.slug && !urlSlug) setWorkspaceSlug(org.slug)
         })
         .catch(() => {})
     }
-    // Also check URL for workspace slug
-    const match = pathname.match(/^\/([^/]+)\/(dashboard|invoices|budgets|expenses|settings)/)
-    if (match && match[1] !== 'dashboard' && match[1] !== 'api' && match[1] !== 'auth') {
-      setWorkspaceSlug(match[1])
-    }
-  }, [pathname])
+  }, [urlSlug])
+
+  const activeWorkspaceSlug = urlSlug ?? workspaceSlug
 
   const getHref = (path: string) => {
-    if (workspaceSlug) {
+    if (activeWorkspaceSlug) {
       // Replace /dashboard with /[workspace]/dashboard
-      if (path === '/dashboard') return `/${workspaceSlug}/dashboard`
-      if (path.startsWith('/dashboard/')) return path.replace('/dashboard', `/${workspaceSlug}`)
+      if (path === '/dashboard') return `/${activeWorkspaceSlug}/dashboard`
+      if (path.startsWith('/dashboard/')) return path.replace('/dashboard', `/${activeWorkspaceSlug}`)
     }
     return path
   }
