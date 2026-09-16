@@ -1,10 +1,11 @@
 import NextAuth from "next-auth";
+import type { NextAuthRequest } from "next-auth";
 import { authConfig } from "@/auth.config";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextFetchEvent } from "next/server";
 
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) => {
+const handler = auth((req) => {
   const isLoggedIn = !!req.auth;
   const isOnDashboard = req.nextUrl.pathname.startsWith("/dashboard");
   const isOnAuth = req.nextUrl.pathname.startsWith("/auth");
@@ -27,6 +28,12 @@ export default auth((req) => {
 
   return NextResponse.next();
 });
+
+const invoke = handler as unknown as (req: NextAuthRequest, event: NextFetchEvent) => Promise<Response>;
+
+export function proxy(request: Request, event: NextFetchEvent) {
+  return invoke(request as NextAuthRequest, event);
+}
 
 export const config = {
   matcher: ["/dashboard/:path*", "/auth/:path*"],
