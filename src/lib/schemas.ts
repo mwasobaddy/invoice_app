@@ -67,6 +67,15 @@ export const RegisterSchema = z.object({
   password: z.string().min(8).max(128),
 });
 
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(32),
+  password: z.string().min(8).max(128),
+});
+
 // Helper for API routes
 export function formatZodError(error: z.ZodError) {
   return error.flatten();
