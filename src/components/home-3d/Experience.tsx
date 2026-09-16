@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/immutability, react-hooks/purity */
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -8,6 +9,12 @@ import AtlasCore from './AtlasCore';
 import { usePointer, usePrefersReducedMotion, useScrollProgress } from './scroll';
 
 type HoverRef = React.MutableRefObject<string | null>;
+
+// Stable waypoint constants (module-scope identity)
+type Waypoint = { pos: [number, number, number]; look: [number, number, number] };
+const W0: Waypoint = { pos: [1.3, -0.5, 5.0], look: [-0.7, -1.5, 0] };
+const W1: Waypoint = { pos: [-4.8, 0.6, 7.2], look: [-0.7, -1.5, 0] };
+const W2: Waypoint = { pos: [-0.2, 1.6, 5.6], look: [-0.7, -1.7, 0] };
 
 /** Cinematic camera: three waypoints (macro → orbit reveal → radiant push-in),
  *  pointer parallax, handheld sway, and an FOV kick on scroll velocity. */
@@ -28,10 +35,6 @@ function Rig({
   const lastY = useRef(0);
   const lastT = useRef(0);
   const vel = useRef(0);
-
-  const W0 = useMemoPos([1.3, -0.5, 5.0], [-0.7, -1.5, 0]);
-  const W1 = useMemoPos([-4.8, 0.6, 7.2], [-0.7, -1.5, 0]);
-  const W2 = useMemoPos([-0.2, 1.6, 5.6], [-0.7, -1.7, 0]);
 
   useFrame(({ clock }, delta) => {
     const k = Math.min(1, delta * 3.2);
@@ -80,13 +83,6 @@ function Rig({
     document.body.style.cursor = hover.current ? 'pointer' : '';
   });
   return null;
-}
-
-// Stable waypoint objects (module-scope identity not needed; tiny helper keeps JSX clean)
-function useMemoPos(pos: [number, number, number], look: [number, number, number]) {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const ref = useRef({ pos, look });
-  return ref.current;
 }
 
 /** Soft foreground bokeh discs (blurred-leaf depth cue). */
@@ -154,14 +150,15 @@ export default function Experience() {
   const progress = useScrollProgress();
   const pointer = usePointer();
   const reduced = usePrefersReducedMotion();
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
   useEffect(() => {
-    setReducedMotion(reduced.current);
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     const onChange = () => setReducedMotion(mq.matches);
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
-  }, [reduced]);
+  }, []);
   const hover = useRef<string | null>(null);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
 
