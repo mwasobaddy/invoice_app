@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) return NextResponse.json({ error: "Validation failed", details: parsed.error.flatten() }, { status: 400 });
     function slugify(name: string) { return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
     let slug = slugify(parsed.data.name);
-    let base = slug;
+    const base = slug;
     let i = 1;
     while (await prisma.org.findUnique({ where: { slug } })) {
       slug = `${base}-${i++}`;
