@@ -124,7 +124,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
     },
-    async signOut(params) {
+    async signOut() {
       // noop — handled via audit log if needed
     },
   },
