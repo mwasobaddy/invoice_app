@@ -29,35 +29,28 @@ export async function POST(request: NextRequest) {
 
     if (apiKey) {
       try {
-        // @ts-ignore — ai SDK optional
         const { generateText } = await import("ai");
         let model: unknown;
         if (provider === "nvidia") {
-          // @ts-ignore — nvidia uses openai-compatible via @ai-sdk/openai with baseURL
           const { createOpenAI } = await import("@ai-sdk/openai");
           const nvidia = createOpenAI({ baseURL: "https://integrate.api.nvidia.com/v1", apiKey });
           model = nvidia("meta/llama-3.1-405b-instruct");
         } else if (provider === "claude") {
-          // @ts-ignore
           const { createAnthropic } = await import("@ai-sdk/anthropic");
           const anthropic = createAnthropic({ apiKey });
           model = anthropic("claude-3-5-sonnet-20240620");
         } else if (provider === "gemini") {
-          // @ts-ignore
           const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
           const google = createGoogleGenerativeAI({ apiKey });
           model = google("gemini-1.5-flash");
         } else {
-          // @ts-ignore
           const { openai } = await import("@ai-sdk/openai");
           // Use provided key if BYOK, else env key is used by SDK automatically
           if (apiKey !== process.env.OPENAI_API_KEY) {
-            // @ts-ignore — optional
             const { createOpenAI } = await import("@ai-sdk/openai");
             const custom = createOpenAI({ apiKey });
             model = custom("gpt-4o-mini");
           } else {
-            // @ts-ignore
             model = openai("gpt-4o-mini");
           }
         }
