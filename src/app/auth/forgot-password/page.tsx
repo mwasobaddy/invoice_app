@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, FileText, KeyRound, ShieldCheck, Zap } from 'lucide-react'
+import { FileText, KeyRound, ShieldCheck, Zap } from 'lucide-react'
 import { Magnetic, Reveal, Tilt } from '@/components/marketing/anim'
 
 export default function ForgotPasswordPage() {
@@ -46,28 +46,27 @@ export default function ForgotPasswordPage() {
       </div>
 
       <div className="relative mx-auto w-full max-w-6xl">
-        <Reveal y={12}>
-          <Link href="/" className="inline-flex items-center gap-3 rounded-2xl px-2 py-2 text-sm font-semibold text-slate-700 transition hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">
-              <FileText className="h-5 w-5" aria-hidden />
-            </span>
-            Invoice Atlas
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-400">
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Back to home
-            </span>
-          </Link>
-        </Reveal>
-
-        <div className="mt-6 grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
           <Reveal>
           <div className="rounded-3xl border border-slate-200/70 bg-white p-8 shadow-xl shadow-slate-200/60 sm:p-10">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Invoice Atlas</p>
-            <h1 className="mt-4 text-3xl font-semibold text-slate-900">Reset your password</h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Enter the email associated with your account and we&apos;ll send you a reset link. Trading it in?{' '}
+          <div className="flex items-center justify-between">
+            <Link href="/" className="inline-flex items-center gap-2.5 text-sm font-semibold text-slate-700 transition hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">
+                <FileText className="h-5 w-5" aria-hidden />
+              </span>
+              Invoice Atlas
+            </Link>
+            <Link href="/auth/signin" className="text-sm font-medium text-slate-500 transition hover:text-slate-900">
+              Sign In
+            </Link>
+          </div>
+
+          <div className="mt-10">
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900">Forgot Password</h1>
+            <p className="mt-3 text-sm text-slate-500">
+              Enter your email and we&apos;ll send you a reset link.{' '}
               <Link href="/auth/signin" className="font-semibold text-slate-900 hover:text-slate-700">
-                back to sign in
+                Back to sign in
               </Link>
             </p>
           </div>
@@ -86,7 +85,7 @@ export default function ForgotPasswordPage() {
               </Link>
             </div>
           ) : (
-            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               {error && (
                 <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4" role="alert">
                   <p className="text-sm font-medium text-red-700">{error}</p>
@@ -96,7 +95,7 @@ export default function ForgotPasswordPage() {
               <div className="space-y-4">
                 <div>
                   <label htmlFor="email" className="text-sm font-medium text-slate-700">
-                    Email address
+                    Email
                   </label>
                   <input
                     id="email"
@@ -104,8 +103,8 @@ export default function ForgotPasswordPage() {
                     type="email"
                     required
                     autoComplete="email"
-                    className="mt-2 w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                    placeholder="email@example.com"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-lime-500 focus:outline-none focus:ring-2 focus:ring-lime-500/20"
+                    placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -120,9 +119,9 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/25 transition hover:bg-slate-800 disabled:opacity-60"
+                  className="w-full rounded-xl bg-gradient-to-r from-lime-400 to-emerald-500 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-lime-400/25 transition hover:from-lime-500 hover:to-emerald-600 disabled:opacity-60"
                 >
-                  {isLoading ? 'Sending link...' : 'Send reset link'}
+                  {isLoading ? 'Sending link...' : 'Send Reset Link'}
                 </button>
               </Magnetic>
             </form>

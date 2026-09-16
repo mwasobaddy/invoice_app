@@ -3,7 +3,7 @@
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FileText, ShieldCheck, Zap } from 'lucide-react'
+import { FileText, ShieldCheck, Zap } from 'lucide-react'
 import { Magnetic, Reveal, Tilt } from '@/components/marketing/anim'
 
 function ResetPasswordForm() {
@@ -70,32 +70,31 @@ function ResetPasswordForm() {
       </div>
 
       <div className="relative mx-auto w-full max-w-6xl">
-        <Reveal y={12}>
-          <Link href="/" className="inline-flex items-center gap-3 rounded-2xl px-2 py-2 text-sm font-semibold text-slate-700 transition hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">
-              <FileText className="h-5 w-5" aria-hidden />
-            </span>
-            Invoice Atlas
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-400">
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Back to home
-            </span>
-          </Link>
-        </Reveal>
-
-        <div className="mt-6 grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
           <Reveal>
           <div className="rounded-3xl border border-slate-200/70 bg-white p-8 shadow-xl shadow-slate-200/60 sm:p-10">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Invoice Atlas</p>
-            <h1 className="mt-4 text-3xl font-semibold text-slate-900">Choose a new password</h1>
-            <p className="mt-2 text-sm text-slate-600">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="inline-flex items-center gap-2.5 text-sm font-semibold text-slate-700 transition hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">
+                <FileText className="h-5 w-5" aria-hidden />
+              </span>
+              Invoice Atlas
+            </Link>
+            <Link href="/auth/signin" className="text-sm font-medium text-slate-500 transition hover:text-slate-900">
+              Sign In
+            </Link>
+          </div>
+
+          <div className="mt-10">
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900">Reset Password</h1>
+            <p className="mt-3 text-sm text-slate-500">
               {email ? (
-                <>Set a new password for <span className="font-medium text-slate-900">{email}</span>. Or{' '}</>
+                <>Set a new password for <span className="font-medium text-slate-900">{email}</span>.</>
               ) : (
-                <>Set a new password for your account. Or{' '}</>
-              )}
+                <>Set a new password for your account.</>
+              )}{' '}
               <Link href="/auth/signin" className="font-semibold text-slate-900 hover:text-slate-700">
-                back to sign in
+                Back to sign in
               </Link>
             </p>
           </div>
@@ -114,7 +113,7 @@ function ResetPasswordForm() {
               </Link>
             </div>
           ) : (
-            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               {error && (
                 <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4" role="alert">
                   <p className="text-sm font-medium text-red-700">{error}</p>
@@ -124,7 +123,7 @@ function ResetPasswordForm() {
               <div className="space-y-4">
                 <div>
                   <label htmlFor="password" className="text-sm font-medium text-slate-700">
-                    New password
+                    New Password
                   </label>
                   <div className="relative mt-2">
                     <input
@@ -133,7 +132,7 @@ function ResetPasswordForm() {
                       type={showPassword ? 'text' : 'password'}
                       required
                       autoComplete="new-password"
-                      className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 pr-11 text-sm text-slate-900 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-11 text-sm text-slate-900 shadow-sm transition focus:border-lime-500 focus:outline-none focus:ring-2 focus:ring-lime-500/20"
                       placeholder="Create a password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
@@ -141,7 +140,7 @@ function ResetPasswordForm() {
                     <button
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       {showPassword ? (
@@ -164,7 +163,7 @@ function ResetPasswordForm() {
 
                 <div>
                   <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
-                    Confirm new password
+                    Confirm New Password
                   </label>
                   <div className="relative mt-2">
                     <input
@@ -173,7 +172,7 @@ function ResetPasswordForm() {
                       type={showConfirmPassword ? 'text' : 'password'}
                       required
                       autoComplete="new-password"
-                      className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 pr-11 text-sm text-slate-900 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-11 text-sm text-slate-900 shadow-sm transition focus:border-lime-500 focus:outline-none focus:ring-2 focus:ring-lime-500/20"
                       placeholder="Confirm new password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
@@ -181,7 +180,7 @@ function ResetPasswordForm() {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
                       aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                     >
                       {showConfirmPassword ? (
@@ -189,7 +188,6 @@ function ResetPasswordForm() {
                           <path d="M3 3l18 18" />
                           <path d="M10.5 10.5a2.5 2.5 0 0 0 3.5 3.5" />
                           <path d="M7 7c-2.5 1.5-4.5 4-5 5 1.3 2.2 4.8 6 10 6 1.3 0 2.6-.3 3.8-.8" />
-                          <path d="M12 6c4.7 0 8.4 3 10 6-.6 1.1-1.7 2.8-3.2 4.2" />
                         </svg>
                       ) : (
                         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -206,9 +204,9 @@ function ResetPasswordForm() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/25 transition hover:bg-slate-800 disabled:opacity-60"
+                  className="w-full rounded-xl bg-gradient-to-r from-lime-400 to-emerald-500 py-3 text-sm font-semibold text-slate-900 shadow-lg shadow-lime-400/25 transition hover:from-lime-500 hover:to-emerald-600 disabled:opacity-60"
                 >
-                  {isLoading ? 'Resetting...' : 'Reset password'}
+                  {isLoading ? 'Resetting...' : 'Reset Password'}
                 </button>
               </Magnetic>
             </form>
