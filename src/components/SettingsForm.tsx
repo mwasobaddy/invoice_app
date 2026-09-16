@@ -7,7 +7,7 @@ interface SettingsFormProps {
   hasPassword: boolean
 }
 
-export default function SettingsForm({ userEmail, hasPassword }: SettingsFormProps) {
+export default function SettingsForm({ hasPassword }: SettingsFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
@@ -81,7 +81,7 @@ export default function SettingsForm({ userEmail, hasPassword }: SettingsFormPro
         newPassword: '',
         confirmPassword: '',
       })
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: 'An error occurred. Please try again.' })
     } finally {
       setIsLoading(false)
