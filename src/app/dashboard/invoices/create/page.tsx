@@ -15,8 +15,12 @@ export default function CreateInvoicePage() {
   const [clientPhone, setClientPhone] = useState('')
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
-  const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0])
-  const [dueDate, setDueDate] = useState(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+  const [issueDate, setIssueDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [dueDate, setDueDate] = useState(() => {
+    const d = new Date()
+    d.setDate(d.getDate() + 30)
+    return d.toISOString().split('T')[0]
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
