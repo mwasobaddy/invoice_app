@@ -77,7 +77,7 @@ export async function PUT(request: NextRequest) {
     if (key.startsWith("sk-placeholder")) return NextResponse.json({ description: "Office supplies (AI parsed)", amount: 42.5, category: "Office Supplies", note: "Placeholder key, using mock" });
     // In prod, would call provider here — for now return parsed mock with provider echo
     return NextResponse.json({ description: `Test parse via ${prov}`, amount: 42.5, category: "Office Supplies", provider: prov, ai: true });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: "Failed" }, { status: 500 });
   }
 }
