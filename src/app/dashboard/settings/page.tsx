@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import SettingsForm from "@/components/SettingsForm";
 import AiKeyForm from "@/components/AiKeyForm";
 
