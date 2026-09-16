@@ -161,6 +161,7 @@ export default function AtlasCore({
       <mesh
         ref={core}
         userData={{ hoverId: 'core' }}
+/* eslint-disable react-hooks/immutability */
         onPointerOver={(e) => {
           e.stopPropagation();
           hover.current = 'core';
