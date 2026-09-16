@@ -5,7 +5,7 @@ import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FileText, ShieldCheck, Zap } from 'lucide-react'
-import { Magnetic, Reveal, Tilt } from '@/components/marketing/anim'
+import { Magnetic, Reveal } from '@/components/marketing/anim'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -65,31 +65,30 @@ export default function SignUpPage() {
         <div className="animate-blob-slow-reverse absolute top-1/3 -right-32 h-[28rem] w-[28rem] rounded-full bg-slate-300/40 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto w-full max-w-6xl">
-        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-          <Reveal>
-          <div className="rounded-3xl border border-slate-200/70 bg-white p-8 shadow-xl shadow-slate-200/60 sm:p-10">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="inline-flex items-center gap-2.5 text-sm font-semibold text-slate-700 transition hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">
-                <FileText className="h-5 w-5" aria-hidden />
-              </span>
-              Invoice Atlas
-            </Link>
-            <Link href="/auth/signin" className="text-sm font-medium text-slate-500 transition hover:text-slate-900">
-              Sign In
-            </Link>
-          </div>
-
-          <div className="mt-10">
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900">Create Account</h1>
-            <p className="mt-3 text-sm text-slate-500">
-              Already have an account?{' '}
-              <Link href="/auth/signin" className="font-semibold text-slate-900 hover:text-slate-700">
-                Sign in
+      <div className="relative mx-auto flex min-h-screen items-center justify-center px-4 py-10 sm:px-8">
+        <Reveal>
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200/70 bg-white p-8 shadow-xl shadow-slate-200/60 sm:p-10">
+            <div className="flex items-center justify-between">
+              <Link href="/" className="inline-flex items-center gap-2.5 text-sm font-semibold text-slate-700 transition hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">
+                  <FileText className="h-5 w-5" aria-hidden />
+                </span>
+                Invoice Atlas
               </Link>
-            </p>
-          </div>
+              <Link href="/auth/signin" className="text-sm font-medium text-slate-500 transition hover:text-slate-900">
+                Sign In
+              </Link>
+            </div>
+
+            <div className="mt-10">
+              <h1 className="text-4xl font-bold tracking-tight text-slate-900">Create Account</h1>
+              <p className="mt-3 text-sm text-slate-500">
+                Already have an account?{' '}
+                <Link href="/auth/signin" className="font-semibold text-slate-900 hover:text-slate-700">
+                  Sign in
+                </Link>
+              </p>
+            </div>
 
           <button
             type="button"
@@ -257,61 +256,6 @@ export default function SignUpPage() {
           </div>
           </div>
           </Reveal>
-
-          <Reveal delay={0.12} y={36}>
-          <Tilt className="relative hidden min-h-[520px] lg:block">
-          <div className="relative min-h-[520px] overflow-hidden rounded-[32px] bg-slate-950 text-white shadow-2xl shadow-slate-900/40">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,#1e3a8a_0%,transparent_50%),radial-gradient(circle_at_80%_10%,#0f172a_0%,transparent_55%),radial-gradient(circle_at_70%_80%,#1f2937_0%,transparent_50%)]" />
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(148,163,184,0.25) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-
-          <div className="relative flex h-full flex-col justify-between p-10">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-200">Osmo</p>
-              <div className="flex items-center gap-2 text-xs text-slate-300">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                Live metrics
-              </div>
-            </div>
-
-            <div className="relative mx-auto flex h-[360px] w-[260px] flex-col items-center justify-between rounded-[28px] border border-slate-700/60 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-800 p-6 shadow-2xl">
-              <div className="flex w-full items-center justify-between text-xs text-slate-300">
-                <span>Dashboard</span>
-                <span className="rounded-full bg-slate-800 px-3 py-1 text-[10px] uppercase tracking-widest">Osmo</span>
-              </div>
-              <div className="mt-6 w-full rounded-2xl bg-lime-300/90 p-4 text-slate-900 shadow-lg">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-700">Revenue</p>
-                <p className="mt-2 text-2xl font-semibold">$62,746</p>
-                <p className="mt-2 text-xs text-slate-700">+12% vs last month</p>
-              </div>
-              <div className="mt-6 grid w-full grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-3">
-                  <p className="text-xs text-slate-400">Invoices</p>
-                  <p className="mt-2 text-lg font-semibold">120</p>
-                </div>
-                <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-3">
-                  <p className="text-xs text-slate-400">Paid</p>
-                  <p className="mt-2 text-lg font-semibold">86%</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Sales</p>
-                <p className="mt-2 text-xl font-semibold">$35,647</p>
-                <p className="mt-2 text-xs text-slate-400">+4% this week</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Total Income</p>
-                <p className="mt-2 text-xl font-semibold">$12,924</p>
-                <p className="mt-2 text-xs text-slate-400">USD</p>
-              </div>
-            </div>
-          </div>
-          </div>
-          </Tilt>
-          </Reveal>
-        </div>
       </div>
     </div>
   )
