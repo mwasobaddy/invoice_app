@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, FileText, ShieldCheck, Zap } from 'lucide-react'
-import { Magnetic, Reveal, Tilt } from '@/components/marketing/anim'
+import { ArrowLeft, FileText, ShieldCheck, UserPlus, Zap } from 'lucide-react'
+import { Magnetic, Reveal } from '@/components/marketing/anim'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -58,73 +58,117 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 px-4 py-10 sm:px-8">
-      {/* ambient brand blobs */}
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 px-4 py-8 sm:px-6">
+      {/* blurred backdrop */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="animate-blob-slow absolute -top-24 -left-24 h-96 w-96 rounded-full bg-lime-200/50 blur-3xl" />
-        <div className="animate-blob-slow-reverse absolute top-1/3 -right-32 h-[28rem] w-[28rem] rounded-full bg-slate-300/40 blur-3xl" />
+        <div className="animate-blob-slow absolute -top-24 -left-24 h-96 w-96 rounded-full bg-lime-200/60 blur-3xl" />
+        <div className="animate-blob-slow-reverse absolute -right-32 -bottom-24 h-[28rem] w-[28rem] rounded-full bg-slate-300/50 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto w-full max-w-6xl">
-        <Reveal y={12}>
-          <Link href="/" className="inline-flex items-center gap-3 rounded-2xl px-2 py-2 text-sm font-semibold text-slate-700 transition hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">
-              <FileText className="h-5 w-5" aria-hidden />
-            </span>
-            Invoice Atlas
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-400">
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Back to home
-            </span>
-          </Link>
-        </Reveal>
+      <Reveal className="relative w-full max-w-5xl">
+        {/* single split container — brand half + form half */}
+        <div className="grid overflow-hidden rounded-[32px] bg-white shadow-2xl shadow-slate-900/20 lg:grid-cols-2">
+          {/* LEFT — brand half */}
+          <div className="relative hidden flex-col justify-between overflow-hidden bg-slate-950 p-10 text-white lg:flex">
+            <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,#1e3a8a_0%,transparent_50%),radial-gradient(circle_at_80%_10%,#0f172a_0%,transparent_55%),radial-gradient(circle_at_70%_80%,#1f2937_0%,transparent_50%)]" />
+            <div aria-hidden className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(148,163,184,0.25) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
 
-        <div className="mt-6 grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-          <Reveal>
-          <div className="rounded-3xl border border-slate-200/70 bg-white p-8 shadow-xl shadow-slate-200/60 sm:p-10">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Invoice Atlas</p>
-            <h1 className="mt-4 text-3xl font-semibold text-slate-900">Create your account</h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Or{' '}
-              <Link href="/auth/signin" className="font-semibold text-slate-900 hover:text-slate-700">
-                sign in to your account
-              </Link>
-            </p>
-          </div>
+            <p className="relative text-xs text-slate-400">Global billing made simple — invoice faster, get paid sooner.</p>
 
-          <button
-            type="button"
-            onClick={() => signIn('google', { redirect: true, callbackUrl: '/dashboard' })}
-            className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900"
-          >
-            <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 48 48">
-              <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
-              <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
-              <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
-              <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
-            </svg>
-            Continue with Google
-          </button>
+            <div className="relative mt-10">
+              <h2 className="text-5xl font-semibold leading-[1.05] tracking-tight">Start billing in minutes</h2>
 
-          <div className="relative mt-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase tracking-[0.3em] text-slate-400">
-              <span className="bg-white px-3">Or sign up with email</span>
-            </div>
-          </div>
-
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4" role="alert">
-                <p className="text-sm font-medium text-red-700">{error}</p>
+              <div className="mx-auto mt-10 flex w-full max-w-[280px] flex-col rounded-[28px] border border-slate-700/60 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-800 p-6 shadow-2xl">
+                <div className="flex w-full items-center justify-between text-xs text-slate-300">
+                  <span>Dashboard</span>
+                  <span className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    Live
+                  </span>
+                </div>
+                <div className="mt-6 w-full rounded-2xl bg-lime-300/90 p-4 text-slate-900 shadow-lg">
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-700">Revenue</p>
+                  <p className="mt-2 text-2xl font-semibold">$62,746</p>
+                  <p className="mt-2 text-xs text-slate-700">+12% vs last month</p>
+                </div>
+                <div className="mt-4 grid w-full grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-3">
+                    <p className="text-xs text-slate-400">Invoices</p>
+                    <p className="mt-2 text-lg font-semibold">120</p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-3">
+                    <p className="text-xs text-slate-400">Paid</p>
+                    <p className="mt-2 text-lg font-semibold">86%</p>
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
 
-            <div className="space-y-4">
+            <div className="relative mt-10 grid grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Setup</p>
+                <p className="mt-2 text-xl font-semibold">2 minutes</p>
+                <p className="mt-1 text-xs text-slate-400">No credit card</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Plan</p>
+                <p className="mt-2 text-xl font-semibold">Free to start</p>
+                <p className="mt-1 text-xs text-slate-400">Upgrade anytime</p>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT — form half */}
+          <div className="flex flex-col bg-white p-8 sm:p-12">
+            <div className="flex items-center justify-between">
+              <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white">
+                  <FileText className="h-4 w-4" aria-hidden />
+                </span>
+                Invoice Atlas
+              </Link>
+              <Link href="/auth/signin" className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition hover:text-slate-900">
+                Sign In
+              </Link>
+            </div>
+
+            <div className="mt-10">
+              <h1 className="text-4xl font-semibold tracking-tight text-slate-900">Sign Up</h1>
+              <p className="mt-2 text-sm text-slate-500">Create your account — free to start, no credit card.</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => signIn('google', { redirect: true, callbackUrl: '/dashboard' })}
+              className="mt-8 flex w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:border-slate-300 hover:text-slate-900"
+            >
+              <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 48 48">
+                <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path>
+                <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path>
+                <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path>
+                <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+              </svg>
+              Continue with Google
+            </button>
+
+            <div className="relative mt-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase tracking-[0.25em] text-slate-400">
+                <span className="bg-white px-3">Or sign up with email</span>
+              </div>
+            </div>
+
+            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+              {error && (
+                <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4" role="alert">
+                  <p className="text-sm font-medium text-red-700">{error}</p>
+                </div>
+              )}
+
               <div>
-                <label htmlFor="name" className="text-sm font-medium text-slate-700">
+                <label htmlFor="name" className="sr-only">
                   Full Name
                 </label>
                 <input
@@ -133,15 +177,15 @@ export default function SignUpPage() {
                   type="text"
                   required
                   autoComplete="name"
-                  className="mt-2 w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                  placeholder="John Doe"
+                  className="w-full rounded-full border border-slate-200/80 bg-white px-5 py-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                  placeholder="Full Name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
 
               <div>
-                <label htmlFor="email" className="text-sm font-medium text-slate-700">
+                <label htmlFor="email" className="sr-only">
                   Email address
                 </label>
                 <input
@@ -150,33 +194,33 @@ export default function SignUpPage() {
                   type="email"
                   required
                   autoComplete="email"
-                  className="mt-2 w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                  placeholder="email@example.com"
+                  className="w-full rounded-full border border-slate-200/80 bg-white px-5 py-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                  placeholder="Email or Username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="text-sm font-medium text-slate-700">
+                <label htmlFor="password" className="sr-only">
                   Password
                 </label>
-                <div className="relative mt-2">
+                <div className="relative">
                   <input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     required
                     autoComplete="new-password"
-                    className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 pr-11 text-sm text-slate-900 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                    placeholder="Create a password"
+                    className="w-full rounded-full border border-slate-200/80 bg-white px-5 py-3 pr-12 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 transition duration-200 hover:text-slate-900"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
@@ -194,29 +238,29 @@ export default function SignUpPage() {
                     )}
                   </button>
                 </div>
-                <p className="mt-2 text-xs text-slate-500">At least 8 characters</p>
+                <p className="mt-2 px-5 text-xs text-slate-500">At least 8 characters</p>
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
+                <label htmlFor="confirmPassword" className="sr-only">
                   Confirm Password
                 </label>
-                <div className="relative mt-2">
+                <div className="relative">
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
                     required
                     autoComplete="new-password"
-                    className="w-full rounded-2xl border border-slate-200/80 bg-white px-4 py-3 pr-11 text-sm text-slate-900 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
-                    placeholder="Confirm password"
+                    className="w-full rounded-full border border-slate-200/80 bg-white px-5 py-3 pr-12 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                    placeholder="Confirm Password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400 transition duration-200 hover:text-slate-900"
                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
                     {showConfirmPassword ? (
@@ -235,85 +279,35 @@ export default function SignUpPage() {
                   </button>
                 </div>
               </div>
-            </div>
 
-            <Magnetic strength={5}>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full rounded-2xl bg-slate-900 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/25 transition hover:bg-slate-800 disabled:opacity-60"
-              >
-                {isLoading ? 'Creating account...' : 'Sign up'}
-              </button>
-            </Magnetic>
-          </form>
+              <Magnetic strength={5}>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-slate-900 py-3 text-sm font-semibold text-white shadow-lg shadow-slate-900/25 transition duration-200 hover:bg-slate-800 disabled:opacity-60"
+                >
+                  <UserPlus className="h-4 w-4" aria-hidden />
+                  {isLoading ? 'Creating account...' : 'Sign Up'}
+                </button>
+              </Magnetic>
+            </form>
 
-          <div className="mt-6 flex items-center justify-center gap-5 text-xs text-slate-500">
-            <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-slate-400" aria-hidden /> Secure by design
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Zap className="h-4 w-4 text-slate-400" aria-hidden /> Free to start
-            </span>
-          </div>
-          </div>
-          </Reveal>
-
-          <Reveal delay={0.12} y={36}>
-          <Tilt className="relative hidden min-h-[520px] lg:block">
-          <div className="relative min-h-[520px] overflow-hidden rounded-[32px] bg-slate-950 text-white shadow-2xl shadow-slate-900/40">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,#1e3a8a_0%,transparent_50%),radial-gradient(circle_at_80%_10%,#0f172a_0%,transparent_55%),radial-gradient(circle_at_70%_80%,#1f2937_0%,transparent_50%)]" />
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(148,163,184,0.25) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-
-          <div className="relative flex h-full flex-col justify-between p-10">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-200">Osmo</p>
-              <div className="flex items-center gap-2 text-xs text-slate-300">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                Live metrics
-              </div>
-            </div>
-
-            <div className="relative mx-auto flex h-[360px] w-[260px] flex-col items-center justify-between rounded-[28px] border border-slate-700/60 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-800 p-6 shadow-2xl">
-              <div className="flex w-full items-center justify-between text-xs text-slate-300">
-                <span>Dashboard</span>
-                <span className="rounded-full bg-slate-800 px-3 py-1 text-[10px] uppercase tracking-widest">Osmo</span>
-              </div>
-              <div className="mt-6 w-full rounded-2xl bg-lime-300/90 p-4 text-slate-900 shadow-lg">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-700">Revenue</p>
-                <p className="mt-2 text-2xl font-semibold">$62,746</p>
-                <p className="mt-2 text-xs text-slate-700">+12% vs last month</p>
-              </div>
-              <div className="mt-6 grid w-full grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-3">
-                  <p className="text-xs text-slate-400">Invoices</p>
-                  <p className="mt-2 text-lg font-semibold">120</p>
-                </div>
-                <div className="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-3">
-                  <p className="text-xs text-slate-400">Paid</p>
-                  <p className="mt-2 text-lg font-semibold">86%</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Sales</p>
-                <p className="mt-2 text-xl font-semibold">$35,647</p>
-                <p className="mt-2 text-xs text-slate-400">+4% this week</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-300">Total Income</p>
-                <p className="mt-2 text-xl font-semibold">$12,924</p>
-                <p className="mt-2 text-xs text-slate-400">USD</p>
-              </div>
+            <div className="mt-10 flex items-center justify-between border-t border-slate-100 pt-6 text-xs text-slate-500">
+              <span className="inline-flex items-center gap-3">
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-slate-400" aria-hidden /> Secure by design
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Zap className="h-4 w-4 text-slate-400" aria-hidden /> Free to start
+                </span>
+              </span>
+              <Link href="/" className="inline-flex items-center gap-1 font-medium transition duration-200 hover:text-slate-900">
+                <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Back to home
+              </Link>
             </div>
           </div>
-          </div>
-          </Tilt>
-          </Reveal>
         </div>
-      </div>
+      </Reveal>
     </div>
   )
 }
