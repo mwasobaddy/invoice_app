@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface InvoiceStats {
@@ -241,9 +242,9 @@ export default function InvoicesPage() {
           <h1 className="text-3xl font-semibold text-slate-900">Workspace</h1>
           <p className="text-sm text-slate-600">Manage and track all your invoices in one place</p>
         </div>
-        <a href="/dashboard/invoices/create" className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-slate-800">
+        <Link href="/dashboard/invoices/create" className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-slate-800">
           + Create Invoice
-        </a>
+        </Link>
       </header>
 
       <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
